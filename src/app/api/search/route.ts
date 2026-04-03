@@ -1,49 +1,50 @@
 import { NextResponse } from "next/server";
-import { getDB } from "../../../../utils/api-routes";
-import { SearchProduct } from "@/types/searchProduct";
+import { query } from "../../../../utils/db";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get("query") || "";
+    const searchQuery = searchParams.get("query") || "";
 
-    const db = await getDB();
+    if (!searchQuery) {
+      return NextResponse.json([]);
+    }
 
-    const products = (await db
-      .collection("products")
-      .find({
-        $and: [
-          {
-            $or: [
-              { title: { $regex: query, $options: "i" } },
-              { description: { $regex: query, $options: "i" } },
-            ],
-          },
-          { quantity: { $gt: 0 } },
-        ],
-      })
-      .project({
-        title: 1,
-        categories: 1,
-        id: 1,
-      })
-      .toArray()) as SearchProduct[];
+    // Поиск товаров по названию или описанию
+    const productsResult = await query(
+      `SELECT 
+        id, 
+        title, 
+        tags as categories
+      FROM products
+      WHERE (title ILIKE $1 OR description ILIKE $1)
+        AND quantity > 0`,
+      [`%${searchQuery}%`]
+    );
+
+    const products = productsResult.rows;
 
     if (!products.length) {
       return NextResponse.json([]);
     }
 
-    const groupedByCategory: Record<string, SearchProduct[]> = {};
+    // Группировка по категориям (тегам)
+    const groupedByCategory: Record<string, any[]> = {};
 
     for (const product of products) {
-      for (const category of product.categories) {
+      const categories = product.categories || []; // tags в PostgreSQL
+      for (const category of categories) {
         const normalizedCategory = category.toLowerCase();
 
         if (!groupedByCategory[normalizedCategory]) {
           groupedByCategory[normalizedCategory] = [];
         }
 
-        groupedByCategory[normalizedCategory].push(product);
+        groupedByCategory[normalizedCategory].push({
+          id: product.id,
+          title: product.title,
+          categories: product.categories,
+        });
       }
     }
 

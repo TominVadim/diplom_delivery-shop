@@ -1,44 +1,39 @@
 import { NextResponse } from "next/server";
-import { getDB } from "../../../../utils/api-routes";
-import { ProductCardProps } from "@/types/product";
+import { query } from "../../../../utils/db";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get("query") || "";
+    const searchQuery = searchParams.get("query") || "";
 
-    const db = await getDB();
+    if (!searchQuery) {
+      return NextResponse.json([]);
+    }
 
-    const products = (await db
-      .collection("products")
-      .find({
-        $and: [
-          {
-            $or: [
-              { title: { $regex: query, $options: "i" } },
-              { description: { $regex: query, $options: "i" } },
-            ],
-          },
-          { quantity: { $gt: 0 } },
-        ],
-      })
-      .project({
-        _id: 1,
-        id: 1,
-        img: 1,
-        title: 1,
-        description: 1,
-        basePrice: 1,
-        discountPercent: 1,
-        rating: 1,
-        tags: 1,
-        quantity: 1
-      })
-      .toArray()) as ProductCardProps[];
+    const productsResult = await query(
+      `SELECT 
+        id, img, title, description, 
+        base_price as "basePrice", 
+        discount_percent as "discountPercent",
+        jsonb_build_object('rate', rating_rate, 'count', rating_count) as rating,
+        tags, weight, quantity
+      FROM products
+      WHERE (title ILIKE $1 OR description ILIKE $1)
+        AND quantity > 0`,
+      [`%${searchQuery}%`]
+    );
+
+    const products = productsResult.rows.map(p => ({
+      ...p,
+      rating: typeof p.rating === 'string' ? JSON.parse(p.rating) : p.rating
+    }));
 
     return NextResponse.json(products);
   } catch (error) {
     console.error("Ошибка поиска:", error);
-    return NextResponse.json({ error: "Ошибка поиска" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Ошибка поиска" },
+      { status: 500 }
+    );
   }
 }

@@ -1,35 +1,50 @@
 import { NextResponse } from "next/server";
-import { getDB } from "../../../../utils/api-routes";
+import { query } from "../../../../utils/db";
+import bcrypt from "bcrypt";
 
 export async function POST(request: Request) {
   try {
     const { phone, password } = await request.json();
 
-    const db = await getDB();
+    // Ищем пользователя по телефону
+    const userResult = await query(
+      `SELECT id, phone, name, email, password_hash 
+       FROM users 
+       WHERE phone = $1`,
+      [phone]
+    );
 
-    const user = await db.collection("users").findOne({ phone });
-
-    if (!user) {
+    if (userResult.rows.length === 0) {
       return NextResponse.json(
         { message: "Пользователь не найден" },
         { status: 401 }
       );
     }
 
-    const bcrypt = await import("bcrypt");
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const user = userResult.rows[0];
+
+    // Проверяем пароль
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
     if (!isPasswordValid) {
-      return NextResponse.json({ message: "Неверный пароль" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Неверный пароль" },
+        { status: 401 }
+      );
     }
+
+    // Разбираем name на surname и firstName (если есть пробел)
+    const nameParts = user.name ? user.name.split(' ') : ['', ''];
+    const surname = nameParts[0] || '';
+    const firstName = nameParts.slice(1).join(' ') || '';
 
     const responseData = {
       success: true,
       user: {
-        _id: user._id,
+        _id: user.id,
         phone: user.phone,
-        surname: user.surname,
-        firstName: user.firstName,
+        surname: surname,
+        firstName: firstName,
         email: user.email,
       },
     };
@@ -37,6 +52,9 @@ export async function POST(request: Request) {
     return NextResponse.json(responseData);
   } catch (error) {
     console.error("Ошибка авторизации:", error);
-    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Ошибка сервера" },
+      { status: 500 }
+    );
   }
 }

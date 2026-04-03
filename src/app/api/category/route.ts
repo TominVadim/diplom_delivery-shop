@@ -1,14 +1,12 @@
-import { ProductCardProps } from "@/types/product";
 import { CONFIG } from "../../../../config/config";
-import { getDB } from "../../../../utils/api-routes";
+import { query } from "../../../../utils/db";
 import { NextResponse } from "next/server";
-import { Filter } from "mongodb";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 export async function GET(request: Request) {
   try {
-    const db = await getDB();
     const { searchParams } = new URL(request.url);
 
     const category = searchParams.get("category");
@@ -22,8 +20,6 @@ export async function GET(request: Request) {
     const getPriceRangeOnly = searchParams.get("getPriceRangeOnly") === "true";
     const inStock = searchParams.get("inStock") === "true";
 
-    const query: Filter<ProductCardProps> = {};
-
     if (!category) {
       return NextResponse.json(
         { message: "Параметр категории обязателен" },
@@ -31,70 +27,77 @@ export async function GET(request: Request) {
       );
     }
 
+    // Если нужно только получить диапазон цен
     if (getPriceRangeOnly) {
-      const categoryOnlyQuery: Filter<ProductCardProps> = {};
-      categoryOnlyQuery.categories = { $in: [category] };
-
-      const priceRange = await db
-        .collection<ProductCardProps>("products")
-        .aggregate([
-          { $match: categoryOnlyQuery },
-          {
-            $group: {
-              _id: null,
-              min: { $min: "$basePrice" },
-              max: { $max: "$basePrice" },
-            },
-          },
-        ])
-        .toArray();
-
+      const priceRangeResult = await query(
+        `SELECT 
+          MIN(base_price) as min, 
+          MAX(base_price) as max
+        FROM products
+        WHERE $1 = ANY(tags)`,
+        [category]
+      );
+      
       return NextResponse.json({
         priceRange: {
-          min: priceRange[0]?.min ?? 0,
-          max: priceRange[0]?.max ?? CONFIG.FALLBACK_PRICE_RANGE,
+          min: priceRangeResult.rows[0]?.min ?? 0,
+          max: priceRangeResult.rows[0]?.max ?? CONFIG.FALLBACK_PRICE_RANGE.max,
         },
       });
     }
 
-    if (category) {
-      query.categories = { $in: [category] };
-    }
+    // Строим WHERE условия
+    const conditions: string[] = [`$1 = ANY(tags)`];
+    const values: any[] = [category];
+    let paramCounter = 2;
 
     if (inStock) {
-      query.quantity = { $gt: 0 };
+      conditions.push(`quantity > 0`);
     }
 
-    if (filters.length > 0) {
-      query.$and = query.$and || [];
-
-      if (filters.includes("our-production")) {
-        query.$and.push({ isOurProduction: true });
-      }
-      if (filters.includes("healthy-food")) {
-        query.$and.push({ isHealthyFood: true });
-      }
-      if (filters.includes("non-gmo")) {
-        query.$and.push({ isNonGMO: true });
-      }
+    if (priceFrom) {
+      conditions.push(`base_price >= $${paramCounter}`);
+      values.push(parseInt(priceFrom));
+      paramCounter++;
     }
 
-    if (priceFrom || priceTo) {
-      query.basePrice = {};
-      if (priceFrom) query.basePrice.$gte = parseInt(priceFrom);
-      if (priceTo) query.basePrice.$lte = parseInt(priceTo);
+    if (priceTo) {
+      conditions.push(`base_price <= $${paramCounter}`);
+      values.push(parseInt(priceTo));
+      paramCounter++;
     }
 
-    const [totalCount, products] = await Promise.all([
-      db.collection<ProductCardProps>("products").countDocuments(query),
-      db
-        .collection<ProductCardProps>("products")
-        .find(query)
-        .sort({ _id: 1 })
-        .skip(startIdx)
-        .limit(perPage)
-        .toArray(),
-    ]);
+    // Фильтры (в PostgreSQL нет isOurProduction и т.д., пока пропустим)
+    // TODO: добавить дополнительные поля в таблицу products при необходимости
+    
+    const whereClause = conditions.join(' AND ');
+
+    // Получаем общее количество
+    const countResult = await query(
+      `SELECT COUNT(*) FROM products WHERE ${whereClause}`,
+      values
+    );
+    const totalCount = parseInt(countResult.rows[0].count);
+
+    // Получаем товары с пагинацией
+    const productsResult = await query(
+      `SELECT 
+        id, img, title, description, 
+        base_price as "basePrice", 
+        discount_percent as "discountPercent",
+        jsonb_build_object('rate', rating_rate, 'count', rating_count) as rating,
+        tags, weight, quantity
+      FROM products
+      WHERE ${whereClause}
+      ORDER BY id
+      LIMIT $${paramCounter} OFFSET $${paramCounter + 1}`,
+      [...values, perPage, startIdx]
+    );
+
+    const products = productsResult.rows.map(p => ({
+      ...p,
+      rating: typeof p.rating === 'string' ? JSON.parse(p.rating) : p.rating
+    }));
 
     return NextResponse.json({
       products,

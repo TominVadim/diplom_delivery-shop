@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDB } from "../../../../utils/api-routes";
+import { query } from "../../../../utils/db";
 import bcrypt from "bcrypt";
 
 export async function POST(request: Request) {
@@ -18,38 +18,37 @@ export async function POST(request: Request) {
       hasCard,
     } = await request.json();
 
-    const db = await getDB();
+    // Проверяем, существует ли пользователь с таким телефоном
+    const existingUser = await query(
+      `SELECT id FROM users WHERE phone = $1`,
+      [phone]
+    );
 
-    const existingUser = await db.collection("users").findOne({
-      phone,
-    });
-
-    if (existingUser) {
-      return NextResponse.json({ error: "Пользователь с таким телефоном уже существует" }, { status: 400 });
+    if (existingUser.rows.length > 0) {
+      return NextResponse.json(
+        { error: "Пользователь с таким телефоном уже существует" },
+        { status: 400 }
+      );
     }
 
+    // Хешируем пароль
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await db.collection("users").insertOne({
-      phone,
-      surname,
-      firstName,
-      password: hashedPassword,
-      birthdayDate,
-      region,
-      location,
-      gender,
-      card,
-      email,
-      hasCard,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    // Создаём пользователя
+    const result = await query(
+      `INSERT INTO users 
+        (phone, name, email, password_hash, birth_date, created_at)
+       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+       RETURNING id`,
+      [phone, `${surname} ${firstName}`.trim(), email || null, hashedPassword, birthdayDate || null]
+    );
+
+    const userId = result.rows[0].id;
 
     return NextResponse.json(
       {
         success: true,
-        userId: result.insertedId,
+        userId: userId,
         user: {
           phone,
           surname,
@@ -61,6 +60,9 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Ошибка регистрации:", error);
-    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Ошибка сервера" },
+      { status: 500 }
+    );
   }
 }
