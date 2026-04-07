@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import fetchArticles from "../fetchArticles";
-import GenericListPage from "@/app/(products)/GenericListPage";
+import GenericListPage from "@/app/GenericListPage";
 import { Loader } from "@/components/Loader";
 
 export const metadata = {
