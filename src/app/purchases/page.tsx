@@ -1,46 +1,42 @@
 import ProductCard from "@/components/ProductCard";
-import { ProductCardProps } from "@/types/product";
-import ViewAllButton from "@/components/ViewAllButton";
+import GenericListPage from "@/components/GenericListPage";
 
-const AllUserPurchases = async () => {
-  let purchases: ProductCardProps[] = [];
-  let error = null;
+interface PageProps {
+  searchParams: Promise<{ page?: string; itemsPerPage?: string }>;
+}
+
+const AllUserPurchases = async ({ searchParams }: PageProps) => {
+  const params = await searchParams;
+  const page = parseInt(params.page || "1");
+  const itemsPerPage = parseInt(params.itemsPerPage || "4");
 
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL!}/api/users/purchases`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/purchases?page=${page}&limit=${itemsPerPage}`,
+      { cache: "no-store" }
     );
     if (!res.ok) throw new Error("Ошибка загрузки");
     const data = await res.json();
-    purchases = data.products || [];
-  } catch (err) {
-    error = "Ошибка получения всех купленных продуктов";
-    console.error("Ошибка в компоненте AllUserPurchases:", err);
-  }
 
-  if (error) {
-    return <div className="text-red-500">Ошибка: {error}</div>;
-  }
-
-  return (
-    <section>
-      <div className="px-[max(12px,calc((100%-1208px)/2))] flex flex-col mt-20">
-        <div className="mb-4 md:mb-8 xl:mb-10 flex flex-row justify-between">
-          <h2 className="text-2xl xl:text-4xl text-left font-bold text-[#414141]">
-            Покупали раньше
-          </h2>
-          <ViewAllButton btnText="На главную" href="/" />
-        </div>
-        <ul className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 xl:gap-10 justify-items-center">
-          {purchases.map((item) => (
-            <li key={item.id}>
-              <ProductCard {...item} />
-            </li>
-          ))}
-        </ul>
+    return (
+      <GenericListPage
+        items={data.products || []}
+        totalCount={data.totalCount || 0}
+        currentPage={page}
+        basePath="purchases"
+        title="Покупали раньше"
+        contentType="products"
+        renderItem={(product) => <ProductCard {...product} />}
+      />
+    );
+  } catch (error) {
+    console.error("Ошибка в AllUserPurchases:", error);
+    return (
+      <div className="text-red-500 text-center py-20">
+        Ошибка загрузки покупок
       </div>
-    </section>
-  );
+    );
+  }
 };
 
 export default AllUserPurchases;

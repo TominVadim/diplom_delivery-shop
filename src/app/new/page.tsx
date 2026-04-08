@@ -1,47 +1,42 @@
 import ProductCard from "@/components/ProductCard";
-import { ProductCardProps } from "@/types/product";
-import { shuffleArray } from "../../../utils/shuffleArray";
-import ViewAllButton from "@/components/ViewAllButton";
+import GenericListPage from "@/components/GenericListPage";
 
-const AllNew = async () => {
-  let products: ProductCardProps[] = [];
-  let error = null;
+interface PageProps {
+  searchParams: Promise<{ page?: string; itemsPerPage?: string }>;
+}
+
+const AllNew = async ({ searchParams }: PageProps) => {
+  const params = await searchParams;
+  const page = parseInt(params.page || "1");
+  const itemsPerPage = parseInt(params.itemsPerPage || "4");
+
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/products?tag=new`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/products?tag=new&page=${page}&limit=${itemsPerPage}`,
+      { cache: "no-store" }
     );
     if (!res.ok) throw new Error("Ошибка загрузки");
     const data = await res.json();
-    products = data.products || [];
-    products = shuffleArray(products);
-  } catch (err) {
-    error = "Ошибка получения всех новинок";
-    console.error("Ошибка в компоненте AllNew:", err);
-  }
 
-  if (error) {
-    return <div className="text-red-500">Ошибка: {error}</div>;
-  }
-
-  return (
-    <section>
-      <div className="px-[max(12px,calc((100%-1208px)/2))] flex flex-col mt-20">
-        <div className="mb-4 md:mb-8 xl:mb-10 flex flex-row justify-between">
-          <h2 className="text-2xl xl:text-4xl text-left font-bold text-[#414141]">
-            Все новинки
-          </h2>
-          <ViewAllButton btnText="На главную" href="/" />
-        </div>
-        <ul className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 xl:gap-10 justify-items-center">
-          {products.map((item) => (
-            <li key={item.id}>
-              <ProductCard {...item} />
-            </li>
-          ))}
-        </ul>
+    return (
+      <GenericListPage
+        items={data.products || []}
+        totalCount={data.totalCount || 0}
+        currentPage={page}
+        basePath="new"
+        title="Все новинки"
+        contentType="products"
+        renderItem={(product) => <ProductCard {...product} />}
+      />
+    );
+  } catch (error) {
+    console.error("Ошибка в AllNew:", error);
+    return (
+      <div className="text-red-500 text-center py-20">
+        Ошибка загрузки новинок
       </div>
-    </section>
-  );
+    );
+  }
 };
 
 export default AllNew;
