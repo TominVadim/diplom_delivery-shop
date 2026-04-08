@@ -11,7 +11,8 @@ const Purchases = async () => {
       `${process.env.NEXT_PUBLIC_BASE_URL!}/api/users/purchases?userPurchasesLimit=4`
     );
     if (!res.ok) throw new Error("Ошибка загрузки");
-    purchases = await res.json();
+    const data = await res.json();
+    purchases = Array.isArray(data) ? data : data.products || [];
   } catch (err) {
     error = "Ошибка получения купленных продуктов";
     console.error("Ошибка в компоненте Purchases:", err);
