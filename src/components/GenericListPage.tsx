@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import ViewAllButton from "./ViewAllButton";
 import PaginationWrapper from "./PaginationWrapper";
 
 interface GenericListPageProps {
@@ -31,11 +30,10 @@ const GenericListPage = ({
   return (
     <section>
       <div className="px-[max(12px,calc((100%-1208px)/2))] flex flex-col mt-20">
-        <div className="mb-4 md:mb-8 xl:mb-10 flex flex-row justify-between">
+        <div className="mb-4 md:mb-8 xl:mb-10">
           <h2 className="text-2xl xl:text-4xl text-left font-bold text-[#414141]">
             {title}
           </h2>
-          <ViewAllButton btnText="На главную" href="/" />
         </div>
 
         {items.length === 0 ? (

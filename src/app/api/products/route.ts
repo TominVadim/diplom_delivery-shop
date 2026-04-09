@@ -8,8 +8,14 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const tag = url.searchParams.get("tag");
     const randomLimit = url.searchParams.get("randomLimit");
-    const page = parseInt(url.searchParams.get("page") || "1");
-    const limit = parseInt(url.searchParams.get("limit") || "8");
+    let page = parseInt(url.searchParams.get("page") || "1");
+    let limit = parseInt(url.searchParams.get("limit") || "8");
+
+    // Валидация page и limit
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1) limit = 8;
+    if (limit > 100) limit = 100;
+
     const offset = (page - 1) * limit;
 
     if (!tag) {

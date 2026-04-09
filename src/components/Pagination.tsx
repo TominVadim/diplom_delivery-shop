@@ -50,38 +50,51 @@ const Pagination = ({
   searchQuery,
 }: PaginationProps) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+  
+  // Если всего 1 страница или меньше — не показываем пагинацию
+  if (totalPages <= 1) return null;
+  
   const params = new URLSearchParams(searchQuery);
   const visiblePages = getVisiblePages(totalPages, currentPage);
 
   const buttonSize =
     "w-5 h-5 md:w-10 md:h-10 flex items-center justify-center rounded duration-300";
   const buttonActive = "bg-[#ff6633] text-white hover:bg-[#ff6633]";
-  const buttonDisabled = "bg-[#fcd5ba] cursor-not-allowed";
+  const buttonDisabled = "bg-[#fcd5ba] cursor-not-allowed pointer-events-none";
   const pageButtonClass = `border border-[#ff6633] ${buttonSize}`;
+
+  const renderNavButton = (
+    href: string,
+    disabled: boolean,
+    children: React.ReactNode
+  ) => {
+    if (disabled) {
+      return (
+        <span className={`${buttonSize} ${buttonDisabled}`}>
+          {children}
+        </span>
+      );
+    }
+    return (
+      <Link href={href} className={`${buttonSize} ${buttonActive}`}>
+        {children}
+      </Link>
+    );
+  };
 
   return (
     <div className="flex justify-center mt-10 text-white text-sm md:text-base">
       <nav className="flex gap-1 md:gap-2 items-center">
-        <Link
-          href={createPageUrl(basePath, params, 1)}
-          aria-disabled={currentPage === 1}
-          tabIndex={currentPage === 1 ? -1 : undefined}
-          className={`${buttonSize} ${
-            currentPage === 1 ? buttonDisabled : buttonActive
-          }`}
-        >
-          &laquo;
-        </Link>
-        <Link
-          href={createPageUrl(basePath, params, currentPage - 1)}
-          aria-disabled={currentPage === 1}
-          tabIndex={currentPage === 1 ? -1 : undefined}
-          className={`${buttonSize} ${
-            currentPage === 1 ? buttonDisabled : buttonActive
-          }`}
-        >
-          &lsaquo;
-        </Link>
+        {renderNavButton(
+          createPageUrl(basePath, params, 1),
+          currentPage === 1,
+          "«"
+        )}
+        {renderNavButton(
+          createPageUrl(basePath, params, currentPage - 1),
+          currentPage === 1,
+          "‹"
+        )}
 
         {visiblePages.map((page, index) => {
           if (page === "...") {
@@ -101,7 +114,7 @@ const Pagination = ({
               className={`${pageButtonClass} ${
                 currentPage === page
                   ? "bg-[#ff6633] text-white border-transparent"
-                  : "text-[#ff6633] bg-white hover:bg-[#ff6633] hover:text-white hover:border-transparents"
+                  : "text-[#ff6633] bg-white hover:bg-[#ff6633] hover:text-white hover:border-transparent"
               }`}
             >
               {page}
@@ -109,27 +122,16 @@ const Pagination = ({
           );
         })}
 
-        <Link
-          href={createPageUrl(basePath, params, currentPage + 1)}
-          aria-disabled={currentPage === totalPages}
-          tabIndex={currentPage === totalPages ? -1 : undefined}
-          className={`${buttonSize} ${
-            currentPage === totalPages ? buttonDisabled : buttonActive
-          }`}
-        >
-          &rsaquo;
-        </Link>
-
-        <Link
-          href={createPageUrl(basePath, params, totalPages)}
-          aria-disabled={currentPage === totalPages}
-          tabIndex={currentPage === totalPages ? -1 : undefined}
-          className={`${buttonSize} ${
-            currentPage === totalPages ? buttonDisabled : buttonActive
-          }`}
-        >
-          &raquo;
-        </Link>
+        {renderNavButton(
+          createPageUrl(basePath, params, currentPage + 1),
+          currentPage === totalPages,
+          "›"
+        )}
+        {renderNavButton(
+          createPageUrl(basePath, params, totalPages),
+          currentPage === totalPages,
+          "»"
+        )}
       </nav>
     </div>
   );

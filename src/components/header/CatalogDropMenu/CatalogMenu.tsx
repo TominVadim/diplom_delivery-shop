@@ -41,9 +41,9 @@ const CatalogMenu = (
               <MiniLoader />
             ) : categories && categories.length > 0 ? (
               <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
-                {categories.map((category) => (
+                {categories.map((category, index) => (
                   <Link
-                    key={category.slug}
+                    key={`${category.slug}-${index}`}
                     href={`/category/${category.slug}`}
                     className="block px-4 py-2 text-[#414141] hover:text-[#ff6633] font-bold duration-300"
                     onClick={() => setIsCatalogOpen(false)}
