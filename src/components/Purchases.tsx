@@ -32,15 +32,8 @@ const Purchases = async () => {
           <ViewAllButton btnText="Все покупки" href="purchases" />
         </div>
         <ul className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 xl:gap-10 justify-items-center">
-          {purchases.map((item, index) => (
-            <li
-              key={item.id}
-              className={`
-                ${index >= 4 ? "hidden" : ""}
-                ${index >= 3 ? "md:hidden xl:block" : ""}
-                ${index >= 4 ? "xl:hidden" : ""}
-              `}
-            >
+          {purchases.map((item) => (
+            <li key={item.id}>
               <ProductCard {...item} />
             </li>
           ))}

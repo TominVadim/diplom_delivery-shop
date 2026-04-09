@@ -1,6 +1,5 @@
 import ProductCard from "./ProductCard";
 import { ProductCardProps } from "@/types/product";
-import { shuffleArray } from "../../utils/shuffleArray";
 import ViewAllButton from "./ViewAllButton";
 
 const Actions = async () => {
@@ -12,7 +11,6 @@ const Actions = async () => {
     );
     if (!res.ok) throw new Error("Ошибка загрузки");
     products = await res.json();
-    products = shuffleArray(products);
   } catch (err) {
     error = "Ошибка получения акционных продуктов";
     console.error("Ошибка в компоненте Actions:", err);
@@ -32,14 +30,8 @@ const Actions = async () => {
           <ViewAllButton btnText="Все акции" href="actions" />
         </div>
         <ul className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 xl:gap-10 justify-items-center">
-          {products.slice(0, 4).map((item, index) => (
-            <li
-              key={item.id}
-              className={`${index >= 4 ? "hidden" : ""}
-            ${index >= 3 ? "md:hidden xl:block" : ""}
-            ${index >= 4 ? "xl:hidden" : ""}
-            `}
-            >
+          {products.map((item) => (
+            <li key={item.id}>
               <ProductCard {...item} />
             </li>
           ))}
