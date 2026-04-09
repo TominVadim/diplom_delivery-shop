@@ -1,5 +1,4 @@
 export interface CatalogProps {
-  _id: string;
   id: number;
   order: number;
   title: string;

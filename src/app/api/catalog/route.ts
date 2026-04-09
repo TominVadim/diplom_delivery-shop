@@ -1,26 +1,28 @@
 import { query } from "../../../../utils/db";
 import { NextResponse } from "next/server";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
+// GET: получение всех категорий, сортировка по order_num
 export async function GET() {
   try {
     const result = await query(
       `SELECT 
-        id as "_id",
+        id, 
         order_num as "order",
-        title,
-        img,
+        title, 
+        slug, 
+        img, 
         col_span as "colSpan",
         tablet_col_span as "tabletColSpan",
         mobile_col_span as "mobileColSpan"
-      FROM catalog
+      FROM catalog 
       ORDER BY order_num ASC`
     );
     
     return NextResponse.json(result.rows);
   } catch (error) {
-    console.error("Ошибка сервера:", error);
+    console.error("Ошибка при загрузке каталога:", error);
     return NextResponse.json(
       { message: "Ошибка при загрузке каталога" },
       { status: 500 }
@@ -28,43 +30,33 @@ export async function GET() {
   }
 }
 
+// POST: обновление порядка категорий (для drag&drop)
 export async function POST(request: Request) {
   try {
-    const updatedCategories: any[] = await request.json();
-
-    // Обновляем каждую категорию
-    for (const category of updatedCategories) {
-      await query(
-        `UPDATE catalog 
-         SET 
-           order_num = $1,
-           title = $2,
-           img = $3,
-           col_span = $4,
-           tablet_col_span = $5,
-           mobile_col_span = $6,
-           updated_at = CURRENT_TIMESTAMP
-         WHERE id = $7`,
-        [
-          category.order,
-          category.title,
-          category.img,
-          category.colSpan,
-          category.tabletColSpan,
-          category.mobileColSpan,
-          parseInt(category._id)
-        ]
+    const updatedCategories = await request.json();
+    
+    if (!Array.isArray(updatedCategories)) {
+      return NextResponse.json(
+        { message: "Некорректный формат данных" },
+        { status: 400 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      updatedCount: updatedCategories.length,
-    });
+    // Обновляем order_num для каждой категории
+    for (const category of updatedCategories) {
+      await query(
+        `UPDATE catalog 
+         SET order_num = $1 
+         WHERE id = $2`,
+        [category.order, category.id]
+      );
+    }
+
+    return NextResponse.json({ success: true, message: "Порядок обновлён" });
   } catch (error) {
-    console.error("Ошибка при обновлении порядка категорий:", error);
+    console.error("Ошибка при обновлении порядка каталога:", error);
     return NextResponse.json(
-      { message: "Ошибка при обновлении порядка категорий" },
+      { message: "Ошибка при обновлении порядка каталога" },
       { status: 500 }
     );
   }
