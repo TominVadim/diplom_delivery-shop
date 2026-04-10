@@ -1,69 +1,36 @@
-import Image from "next/image";
-import { Article } from "@/types/articles";
-import ViewAllButton from "./ViewAllButton";
+"use client";
 
-const Articles = async () => {
-  let articles: Article[] = [];
-  let error = null;
+import { useEffect, useState } from "react";
+import ArticlesSection from "./ArticlesSection";
+import { ArticleCardProps } from "@/types/articles";
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL!}/api/articles`
-    );
-    const data = await res.json();
-    articles = data.articles || [];
-  } catch (err) {
-    error = "Ошибка получения статей";
-    console.error("Ошибка в компоненте Article:", err);
-  }
+const Articles = () => {
+  const [articles, setArticles] = useState<ArticleCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (error) {
-    return <div className="text-red-500">Ошибка: {error}</div>;
-  }
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/articles");
+        if (!response.ok) throw new Error("Ошибка загрузки");
+        const data = await response.json();
+        setArticles(data.articles || []);
+      } catch (err) {
+        setError("Не удалось загрузить статьи");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  return (
-    <section>
-      <div className="flex flex-col justify-center xl:max-w-[1208px] text-[#414141]">
-        <div className="mb-4 md:mb-8 xl:mb-10 flex flex-row justify-between">
-          <h2 className="text-2xl xl:text-4xl text-left font-bold">Статьи</h2>
-          <ViewAllButton btnText="Все статьи" href="articles" />
-        </div>
+    fetchArticles();
+  }, []);
 
-        <ul className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6">
-          {articles.map((article) => (
-            <li key={article.id} className="h-75 md:h-105">
-              <article className="bg-white h-full flex flex-col rounded overflow-hidden shadow-(--shadow-card) hover:shadow-(--shadow-article) duration-300">
-                <div className="relative h-48 w-full">
-                  <Image
-                    src={article.img}
-                    alt={article.title}
-                    fill
-                    className="object-cover"
-                    quality={100}
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  />
-                </div>
-                <div className="p-2.5 flex-1 flex flex-col gap-y-2.5 leading-[1.5]">
-                  <time className="text-[8px] text-[#8f8f8f]">
-                    {new Date(article.createdAt).toLocaleDateString("ru-RU")}
-                  </time>
-                  <h3 className="text-[#414141] text-base font-bold xl:text-lg">
-                    {article.title}
-                  </h3>
-                  <p className="text-[#414141] line-clamp-3 text-xs xl:text-base">
-                    {article.text}
-                  </p>
-                  <button className="rounded mt-auto w-37.5 h-10 bg-[#E5FFDE] text-base text-[#70C05B] hover:bg-(--color-primary) hover:shadow-(--shadow-button-default) hover:text-white active:shadow-(--shadow-button-active) duration-300 cursor-pointer">
-                    Подробнее
-                  </button>
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
+  if (loading) return <ArticlesSection title="Статьи" articles={[]} loading />;
+  if (error) return <div className="text-red-500 text-center py-4">{error}</div>;
+
+  return <ArticlesSection title="Статьи" articles={articles} viewAllButton={{ text: "Смотреть все", href: "/articles" }} />;
 };
 
 export default Articles;

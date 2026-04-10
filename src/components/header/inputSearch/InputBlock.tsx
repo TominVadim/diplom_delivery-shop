@@ -41,7 +41,6 @@ const InputBlock = ({
           const data = await response.json();
           setGroupedProducts(data);
         } catch (error) {
-          console.error("Не найден продукт или категория", error);
           setError("Не найден продукт или категория");
         } finally {
           setIsLoading(false);

@@ -1,46 +1,37 @@
-import ProductCard from "./ProductCard";
+"use client";
+
+import { useEffect, useState } from "react";
+import ProductsSection from "./ProductsSection";
 import { ProductCardProps } from "@/types/product";
-import ViewAllButton from "./ViewAllButton";
 
-const Purchases = async () => {
-  let purchases: ProductCardProps[] = [];
-  let error = null;
+const Purchases = () => {
+  const [products, setProducts] = useState<ProductCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL!}/api/users/purchases?userPurchasesLimit=4`
-    );
-    if (!res.ok) throw new Error("Ошибка загрузки");
-    const data = await res.json();
-    purchases = Array.isArray(data) ? data : data.products || [];
-  } catch (err) {
-    error = "Ошибка получения купленных продуктов";
-    console.error("Ошибка в компоненте Purchases:", err);
-  }
+  useEffect(() => {
+    const fetchPurchases = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/users/purchases?userPurchasesLimit=4");
+        if (!response.ok) throw new Error("Ошибка загрузки");
+        const data = await response.json();
+        setProducts(data.products || []);
+      } catch (err) {
+        setError("Не удалось загрузить ваши покупки");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (error) {
-    return <div className="text-red-500">Ошибка: {error}</div>;
-  }
+    fetchPurchases();
+  }, []);
 
-  return (
-    <section>
-      <div className="flex flex-col justify-center xl:max-w-[1208px]">
-        <div className="mb-4 md:mb-8 xl:mb-10 flex flex-row justify-between text-[#414141]">
-          <h2 className="text-2xl xl:text-4xl text-left font-bold">
-            Покупали раньше
-          </h2>
-          <ViewAllButton btnText="Все покупки" href="purchases" />
-        </div>
-        <ul className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 xl:gap-10 justify-items-center">
-          {purchases.map((item) => (
-            <li key={item.id}>
-              <ProductCard {...item} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
+  if (loading) return <ProductsSection title="Покупали раньше" products={[]} loading />;
+  if (error) return <div className="text-red-500 text-center py-4">{error}</div>;
+  if (products.length === 0) return null;
+
+  return <ProductsSection title="Покупали раньше" products={products} viewAllLink="/purchases" />;
 };
 
 export default Purchases;

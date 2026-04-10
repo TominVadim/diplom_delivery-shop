@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
 
-    const category = searchParams.get("category");
+    const slug = searchParams.get("slug");
     const startIdx = parseInt(searchParams.get("startIdx") || "0");
     const perPage = parseInt(
       searchParams.get("perPage") || CONFIG.ITEMS_PER_PAGE_CATEGORY.toString()
@@ -20,24 +20,39 @@ export async function GET(request: Request) {
     const getPriceRangeOnly = searchParams.get("getPriceRangeOnly") === "true";
     const inStock = searchParams.get("inStock") === "true";
 
-    if (!category) {
+    if (!slug) {
       return NextResponse.json(
-        { message: "Параметр категории обязателен" },
+        { message: "Параметр slug обязателен" },
         { status: 400 }
       );
     }
 
+    // Сначала получаем категорию по slug
+    const categoryResult = await query(
+      "SELECT title FROM catalog WHERE slug = $1",
+      [slug]
+    );
+    
+    if (categoryResult.rows.length === 0) {
+      return NextResponse.json(
+        { message: "Категория не найдена" },
+        { status: 404 }
+      );
+    }
+    
+    const categoryTitle = categoryResult.rows[0].title;
+
     // Если нужно только получить диапазон цен
     if (getPriceRangeOnly) {
       const priceRangeResult = await query(
-        `SELECT 
-          MIN(base_price) as min, 
+        `SELECT
+          MIN(base_price) as min,
           MAX(base_price) as max
         FROM products
         WHERE $1 = ANY(tags)`,
-        [category]
+        [categoryTitle]
       );
-      
+
       return NextResponse.json({
         priceRange: {
           min: priceRangeResult.rows[0]?.min ?? 0,
@@ -48,7 +63,7 @@ export async function GET(request: Request) {
 
     // Строим WHERE условия
     const conditions: string[] = [`$1 = ANY(tags)`];
-    const values: any[] = [category];
+    const values: any[] = [categoryTitle];
     let paramCounter = 2;
 
     if (inStock) {
@@ -67,9 +82,6 @@ export async function GET(request: Request) {
       paramCounter++;
     }
 
-    // Фильтры (в PostgreSQL нет isOurProduction и т.д., пока пропустим)
-    // TODO: добавить дополнительные поля в таблицу products при необходимости
-    
     const whereClause = conditions.join(' AND ');
 
     // Получаем общее количество
@@ -81,9 +93,9 @@ export async function GET(request: Request) {
 
     // Получаем товары с пагинацией
     const productsResult = await query(
-      `SELECT 
-        id, img, title, description, 
-        base_price as "basePrice", 
+      `SELECT
+        id, img, title, description,
+        base_price as "basePrice",
         discount_percent as "discountPercent",
         jsonb_build_object('rate', rating_rate, 'count', rating_count) as rating,
         tags, weight, quantity

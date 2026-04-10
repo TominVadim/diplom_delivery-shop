@@ -6,7 +6,7 @@ import Purchases from "@/components/Purchases";
 import Slider from "@/components/Slider/Slider";
 import SpecialOffers from "@/components/SpecialOffers";
 import { Suspense } from "react";
-import { Loader } from "@/components/Loader";
+import Loader from "@/components/Loader";
 
 export default function Home() {
   return (

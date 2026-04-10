@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CatalogProps } from "@/types/catalog";
 import GridCategoryBlock from "@/components/GridCategoryBlock";
+import ErrorComponent from "@/components/ErrorComponent";
 
 const CatalogPage = () => {
   const [categories, setCategories] = useState<CatalogProps[]>([]);
@@ -10,7 +11,7 @@ const CatalogPage = () => {
   const [draggedCategory, setDraggedCategory] = useState<CatalogProps | null>(null);
   const [overedCategoryId, setOveredCategoryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ error: Error; userMessage: string } | null>(null);
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -21,7 +22,10 @@ const CatalogPage = () => {
       const data = await res.json();
       setCategories(data);
     } catch (err) {
-      setError("Не удалось загрузить каталог");
+      setError({
+        error: err instanceof Error ? err : new Error("Неизвестная ошибка"),
+        userMessage: "Не удалось загрузить каталог категорий",
+      });
       console.error(err);
     } finally {
       setLoading(false);
@@ -47,13 +51,13 @@ const CatalogPage = () => {
         title: cat.title,
         img: cat.img,
       }));
-      
+
       const res = await fetch("/api/catalog", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
       });
-      
+
       if (!res.ok) throw new Error("Ошибка обновления");
       const result = await res.json();
       if (result.success) {
@@ -61,7 +65,10 @@ const CatalogPage = () => {
       }
     } catch (err) {
       console.error("Ошибка при обновлении порядка:", err);
-      setError("Не удалось сохранить порядок");
+      setError({
+        error: err instanceof Error ? err : new Error("Неизвестная ошибка"),
+        userMessage: "Не удалось сохранить порядок категорий",
+      });
     }
   };
 
@@ -103,7 +110,6 @@ const CatalogPage = () => {
 
     if (draggedIndex === -1 || targetIndex === -1) return;
 
-    // Меняем местами
     [newCategories[draggedIndex], newCategories[targetIndex]] = [
       newCategories[targetIndex],
       newCategories[draggedIndex],
@@ -125,14 +131,8 @@ const CatalogPage = () => {
 
   if (error) {
     return (
-      <div className="px-[max(12px,calc((100%-1208px)/2))] py-20 text-center">
-        <p className="text-red-500">{error}</p>
-        <button
-          onClick={fetchCategories}
-          className="mt-4 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
-        >
-          Попробовать снова
-        </button>
+      <div className="px-[max(12px,calc((100%-1208px)/2))] py-20">
+        <ErrorComponent error={error.error} userMessage={error.userMessage} />
       </div>
     );
   }
@@ -166,7 +166,7 @@ const CatalogPage = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 xl:gap-8">
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <GridCategoryBlock
             key={category.id}
             category={category}
@@ -177,6 +177,7 @@ const CatalogPage = () => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            priority={index < 4}
           />
         ))}
       </div>

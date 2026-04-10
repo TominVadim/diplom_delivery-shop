@@ -1,44 +1,37 @@
-import ProductCard from "./ProductCard";
+"use client";
+
+import { useEffect, useState } from "react";
+import ProductsSection from "./ProductsSection";
 import { ProductCardProps } from "@/types/product";
-import ViewAllButton from "./ViewAllButton";
 
-const Actions = async () => {
-  let products: ProductCardProps[] = [];
-  let error = null;
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/products?tag=actions&randomLimit=4`
-    );
-    if (!res.ok) throw new Error("Ошибка загрузки");
-    products = await res.json();
-  } catch (err) {
-    error = "Ошибка получения акционных продуктов";
-    console.error("Ошибка в компоненте Actions:", err);
-  }
+const Actions = () => {
+  const [products, setProducts] = useState<ProductCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (error) {
-    return <div className="text-red-500">Ошибка: {error}</div>;
-  }
+  useEffect(() => {
+    const fetchActions = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/products?tag=actions&randomLimit=4");
+        if (!response.ok) throw new Error("Ошибка загрузки");
+        const data = await response.json();
+        // API возвращает массив, а не {products: []}
+        setProducts(Array.isArray(data) ? data : data.products || []);
+      } catch (err) {
+        setError("Не удалось загрузить акции");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  return (
-    <section>
-      <div className="flex flex-col ">
-        <div className="mb-4 md:mb-8 xl:mb-10 flex flex-row justify-between">
-          <h2 className="text-2xl xl:text-4xl text-left font-bold text-[#414141]">
-            Акции
-          </h2>
-          <ViewAllButton btnText="Все акции" href="actions" />
-        </div>
-        <ul className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 xl:gap-10 justify-items-center">
-          {products.map((item) => (
-            <li key={item.id}>
-              <ProductCard {...item} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
+    fetchActions();
+  }, []);
+
+  if (loading) return <ProductsSection title="Акции" products={[]} loading />;
+  if (error) return <div className="text-red-500 text-center py-4">{error}</div>;
+
+  return <ProductsSection title="Акции" products={products} viewAllLink="/actions" />;
 };
 
 export default Actions;
