@@ -9,7 +9,7 @@ import { CONFIG } from "../../config/config";
 const cardDiscountPercent = CONFIG.CARD_DISCOUNT_PERCENT;
 
 const ProductCard = ({
-  _id,
+  id,
   img,
   description,
   basePrice,
@@ -48,7 +48,7 @@ const ProductCard = ({
           sizes="24px"
         />
       </button>
-      <Link href={`/product/${_id}`}>
+      <Link href={`/product/${id}`}>
         <div className="relative aspect-square w-40 h-40 md:w-[224px] xl:w-[272px]">
           <Image
             src={img}

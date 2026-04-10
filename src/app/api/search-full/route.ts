@@ -10,30 +10,39 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    const productsResult = await query(
-      `SELECT 
-        id, img, title, description, 
-        base_price as "basePrice", 
-        discount_percent as "discountPercent",
-        jsonb_build_object('rate', rating_rate, 'count', rating_count) as rating,
-        tags, weight, quantity
+    const result = await query(
+      `SELECT
+        id,
+        title,
+        description,
+        base_price,
+        discount_percent,
+        rating_rate,
+        rating_count,
+        img,
+        tags,
+        quantity
       FROM products
       WHERE (title ILIKE $1 OR description ILIKE $1)
-        AND quantity > 0`,
+        AND quantity > 0
+      ORDER BY id`,
       [`%${searchQuery}%`]
     );
 
-    const products = productsResult.rows.map(p => ({
-      ...p,
-      rating: typeof p.rating === 'string' ? JSON.parse(p.rating) : p.rating
+    // Формируем объект rating как в ProductCardProps
+    const products = result.rows.map(row => ({
+      ...row,
+      basePrice: row.base_price,
+      discountPercent: row.discount_percent,
+      rating: {
+        rate: parseFloat(row.rating_rate) || 0,
+        count: parseInt(row.rating_count) || 0
+      }
     }));
 
     return NextResponse.json(products);
   } catch (error) {
-    console.error("Ошибка поиска:", error);
-    return NextResponse.json(
-      { error: "Ошибка поиска" },
-      { status: 500 }
-    );
+    console.error("Ошибка search-full:", error);
+    return NextResponse.json({ error: "Ошибка поиска" }, { status: 500 });
   }
 }
