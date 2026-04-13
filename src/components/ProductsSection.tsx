@@ -10,6 +10,7 @@ interface ProductsSectionProps {
   marginBottom?: number;
   applyIndexStyles?: boolean;
   loading?: boolean;
+  contentType?: "products" | "category";
 }
 
 const ProductsSection = ({
@@ -21,15 +22,20 @@ const ProductsSection = ({
   marginBottom = 0,
   applyIndexStyles = true,
   loading = false,
+  contentType = "products",
 }: ProductsSectionProps) => {
   if (loading) {
+    const skeletonCols = contentType === "category" 
+      ? "grid-cols-2 md:grid-cols-3"
+      : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4";
+    
     return (
       <section style={{ marginBottom: `${marginBottom}px` }}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">{title}</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
+        <div className={`grid ${skeletonCols} gap-4`}>
+          {[...Array(6)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="bg-gray-200 rounded-lg h-48 w-full"></div>
               <div className="h-4 bg-gray-200 rounded mt-2"></div>
@@ -45,6 +51,18 @@ const ProductsSection = ({
 
   const displayProducts = compact ? products.slice(0, 4) : products;
 
+  const getGridClasses = () => {
+    if (contentType === "category") {
+      if (applyIndexStyles) {
+        return "grid-cols-2 md:grid-cols-3";
+      }
+      return "grid-cols-2 md:grid-cols-4 xl:grid-cols-5";
+    }
+    return applyIndexStyles
+      ? "grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+      : "grid-cols-2 md:grid-cols-4 xl:grid-cols-5";
+  };
+
   return (
     <section style={{ marginBottom: `${marginBottom}px` }}>
       <div className="flex justify-between items-center mb-4">
@@ -52,11 +70,7 @@ const ProductsSection = ({
         {viewAllLink && <ViewAllButton btnText="Смотреть все" href={viewAllLink} />}
         {viewAllButton && <ViewAllButton btnText={viewAllButton.text} href={viewAllButton.href} />}
       </div>
-      <ul className={`grid gap-4 ${
-        applyIndexStyles
-          ? "grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-          : "grid-cols-2 md:grid-cols-4 xl:grid-cols-5"
-      }`}>
+      <ul className={`grid gap-4 ${getGridClasses()}`}>
         {displayProducts.map((item) => (
           <li key={item.id}>
             <ProductCard {...item} />

@@ -7,7 +7,7 @@ interface GenericListPageProps {
   currentPage: number;
   basePath: string;
   title: string;
-  contentType?: "products" | "articles";
+  contentType?: "products" | "articles" | "category";
   renderItem: (item: any) => ReactNode;
 }
 
@@ -24,12 +24,22 @@ const GenericListPage = ({
     if (contentType === "articles") {
       return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 xl:gap-10";
     }
+    if (contentType === "category") {
+      return "grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 xl:gap-10 justify-items-center";
+    }
     return "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 xl:gap-10 justify-items-center";
+  };
+
+  const getMarginTop = () => {
+    if (contentType === "category") {
+      return "";
+    }
+    return "mt-20";
   };
 
   return (
     <section>
-      <div className="px-[max(12px,calc((100%-1208px)/2))] flex flex-col mt-20">
+      <div className={`px-[max(12px,calc((100%-1208px)/2))] flex flex-col ${getMarginTop()}`}>
         <div className="mb-4 md:mb-8 xl:mb-10">
           <h2 className="text-2xl xl:text-4xl text-left font-bold text-[#414141]">
             {title}
@@ -53,7 +63,7 @@ const GenericListPage = ({
                 totalItems={totalCount}
                 currentPage={currentPage}
                 basePath={`/${basePath}`}
-                contentType={contentType === "articles" ? "article" : undefined}
+                contentType={contentType}
               />
             )}
           </>
