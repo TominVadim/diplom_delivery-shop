@@ -6,27 +6,50 @@ interface FetchProductsOptions {
   inStock?: boolean;
   priceFrom?: number;
   priceTo?: number;
+  filters?: string[]; // our_production, healthy_food, non_gmo
 }
 
 export async function fetchProductsByCategory(slug: string, options: FetchProductsOptions) {
-  const { page, limit, inStock, priceFrom, priceTo } = options;
+  const { page, limit, inStock, priceFrom, priceTo, filters = [] } = options;
   const offset = (page - 1) * limit;
 
   let whereClause = `$1 = ANY(p.tags)`;
   const params: any[] = [slug];
 
+  // Фильтр по наличию
   if (inStock === true) {
     whereClause += ` AND p.quantity > 0`;
   }
 
+  // Фильтр по цене от
   if (priceFrom !== undefined) {
     params.push(priceFrom);
     whereClause += ` AND p.base_price >= $${params.length}`;
   }
 
+  // Фильтр по цене до
   if (priceTo !== undefined) {
     params.push(priceTo);
     whereClause += ` AND p.base_price <= $${params.length}`;
+  }
+
+  // Фильтры товаров (our_production, healthy_food, non_gmo)
+  if (filters.length > 0) {
+    const filterConditions: string[] = [];
+    
+    if (filters.includes("our_production")) {
+      filterConditions.push(`p.is_our_production = true`);
+    }
+    if (filters.includes("healthy_food")) {
+      filterConditions.push(`p.is_healthy_food = true`);
+    }
+    if (filters.includes("non_gmo")) {
+      filterConditions.push(`p.is_non_gmo = true`);
+    }
+    
+    if (filterConditions.length > 0) {
+      whereClause += ` AND (${filterConditions.join(" OR ")})`;
+    }
   }
 
   // Count query

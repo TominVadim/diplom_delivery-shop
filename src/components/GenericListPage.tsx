@@ -62,7 +62,7 @@ const GenericListPage = ({
               <PaginationWrapper
                 totalItems={totalCount}
                 currentPage={currentPage}
-                basePath={`/${basePath}`}
+                basePath={basePath}
                 contentType={contentType}
               />
             )}

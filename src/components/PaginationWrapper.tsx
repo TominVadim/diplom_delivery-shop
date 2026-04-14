@@ -21,6 +21,7 @@ function getItemsPerPageByWidth(contentType?: string) {
   if (width < 1280) return 3;
   return 4;
 }
+
 const PaginationWrapper = ({
   totalItems,
   currentPage,
@@ -32,7 +33,7 @@ const PaginationWrapper = ({
   basePath: string;
   contentType?: string;
 }) => {
-  let initialItemsPerPage;
+  let initialItemsPerPage: number;
 
   if (contentType === "article") {
     initialItemsPerPage = 1;
@@ -46,6 +47,13 @@ const PaginationWrapper = ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // Функция для получения текущих параметров с правильным itemsPerPage
+  const getCurrentParams = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("itemsPerPage", itemsPerPage.toString());
+    return params;
+  };
+
   useEffect(() => {
     const updateItemsPerPage = () => {
       const newItemsPerPage = getItemsPerPageByWidth(contentType);
@@ -56,7 +64,7 @@ const PaginationWrapper = ({
 
       const params = new URLSearchParams(searchParams.toString());
       params.set("itemsPerPage", newItemsPerPage.toString());
-      params.set("page", "1");
+      params.delete("page");
 
       router.replace(`${basePath}?${params.toString()}`, { scroll: false });
     };
@@ -69,16 +77,15 @@ const PaginationWrapper = ({
 
     return () => window.removeEventListener("resize", handleResize);
   }, [itemsPerPage, searchParams, basePath, router, contentType]);
+
   return (
-    <>
-      <Pagination
-        totalItems={totalItems}
-        currentPage={currentPage}
-        basePath={basePath}
-        itemsPerPage={itemsPerPage}
-        searchQuery={searchParams.toString()}
-      />
-    </>
+    <Pagination
+      totalItems={totalItems}
+      currentPage={currentPage}
+      basePath={basePath}
+      itemsPerPage={itemsPerPage}
+      searchQuery={getCurrentParams().toString()}
+    />
   );
 };
 
