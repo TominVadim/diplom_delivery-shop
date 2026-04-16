@@ -9,4 +9,5 @@ export interface CategoryBlockProps {
   onDragOver: (e: React.DragEvent, categoryId: number) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, categoryId: number) => void;
+  priority?: boolean;
 }

@@ -1,13 +1,25 @@
 import type { Metadata } from "next";
-import { Rubik } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
-import Header from "@/components/header/Header";
-import Footer from "@/components/Footer";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import Header from "../components/header/Header";
+import Footer from "../components/Footer";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { RegFormProvider } from "@/contexts/RegFormContext";
 
-const rubik = Rubik({
+const rubik = localFont({
+  src: [
+    {
+      path: "../fonts/Rubik-VariableFont_wght.ttf",
+      weight: "100 900",
+      style: "normal",
+    },
+    {
+      path: "../fonts/Rubik-Italic-VariableFont_wght.ttf",
+      weight: "100 900",
+      style: "italic",
+    },
+  ],
   variable: "--font-rubik",
-  subsets: ["latin", "cyrillic"],
 });
 
 export const metadata: Metadata = {
@@ -21,12 +33,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <body className={`${rubik.variable} font-sans`}>
-        <Header />
-        <Breadcrumbs />
-        {children}
-        <Footer />
+        <RegFormProvider>
+          <Header />
+          <Breadcrumbs />
+          {children}
+          <Footer />
+        </RegFormProvider>
       </body>
     </html>
   );

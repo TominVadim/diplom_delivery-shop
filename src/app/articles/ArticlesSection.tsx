@@ -22,7 +22,7 @@ const ArticleSection = ({
         <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {articles.map((article) => (
             <li
-              key={article._id}
+              key={article.id}
               className="h-75 md:h-105"
             >
               <ArticleCard {...article} />

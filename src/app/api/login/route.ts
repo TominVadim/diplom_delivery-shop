@@ -1,59 +1,64 @@
-import { NextResponse } from "next/server";
-import { query } from "../../../../utils/db";
-import bcrypt from "bcrypt";
+import { NextRequest, NextResponse } from 'next/server';
+import { query } from '../../../../utils/db';
+import bcrypt from 'bcrypt';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { phone, password } = await request.json();
 
-    // Ищем пользователя по телефону
-    const userResult = await query(
-      `SELECT id, phone, name, email, password_hash 
-       FROM users 
-       WHERE phone = $1`,
+    if (!phone || !password) {
+      return NextResponse.json(
+        { message: 'Телефон и пароль обязательны' },
+        { status: 400 }
+      );
+    }
+
+    // Ищем пользователя по телефону (без нормализации, так как в БД хранится с маской)
+    const result = await query(
+      `SELECT id, phone, name, email, password_hash, region, location, gender, loyalty_card 
+       FROM users WHERE phone = $1`,
       [phone]
     );
 
-    if (userResult.rows.length === 0) {
+    if (result.rows.length === 0) {
       return NextResponse.json(
-        { message: "Пользователь не найден" },
+        { message: 'Пользователь не найден' },
         { status: 401 }
       );
     }
 
-    const user = userResult.rows[0];
+    const user = result.rows[0];
 
-    // Проверяем пароль
+    // Сравниваем пароль с хэшем
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
     if (!isPasswordValid) {
       return NextResponse.json(
-        { message: "Неверный пароль" },
+        { message: 'Неверный пароль' },
         { status: 401 }
       );
     }
 
-    // Разбираем name на surname и firstName (если есть пробел)
-    const nameParts = user.name ? user.name.split(' ') : ['', ''];
-    const surname = nameParts[0] || '';
-    const firstName = nameParts.slice(1).join(' ') || '';
-
+    // Возвращаем данные пользователя (без пароля)
     const responseData = {
       success: true,
       user: {
-        _id: user.id,
+        id: user.id,
         phone: user.phone,
-        surname: surname,
-        firstName: firstName,
+        name: user.name,
         email: user.email,
+        region: user.region,
+        location: user.location,
+        gender: user.gender,
+        loyaltyCard: user.loyalty_card,
       },
     };
 
     return NextResponse.json(responseData);
   } catch (error) {
-    console.error("Ошибка авторизации:", error);
+    console.error('Ошибка авторизации:', error);
     return NextResponse.json(
-      { error: "Ошибка сервера" },
+      { message: 'Ошибка сервера' },
       { status: 500 }
     );
   }

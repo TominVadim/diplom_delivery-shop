@@ -5,17 +5,15 @@ import bcrypt from "bcrypt";
 export async function POST(request: Request) {
   try {
     const {
-      phone,
-      surname,
-      firstName,
+      email,
       password,
-      birthdayDate,
+      name,
+      phone,
+      birthDate,
       region,
       location,
       gender,
-      card,
-      email,
-      hasCard,
+      loyaltyCard,
     } = await request.json();
 
     // Проверяем, существует ли пользователь с таким телефоном
@@ -36,11 +34,11 @@ export async function POST(request: Request) {
 
     // Создаём пользователя
     const result = await query(
-      `INSERT INTO users 
-        (phone, name, email, password_hash, birth_date, created_at)
-       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+      `INSERT INTO users
+        (phone, name, email, password_hash, birth_date, region, location, gender, loyalty_card, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
        RETURNING id`,
-      [phone, `${surname} ${firstName}`.trim(), email || null, hashedPassword, birthdayDate || null]
+      [phone, name, email || null, hashedPassword, birthDate || null, region || null, location || null, gender || null, loyaltyCard || null]
     );
 
     const userId = result.rows[0].id;
@@ -51,8 +49,7 @@ export async function POST(request: Request) {
         userId: userId,
         user: {
           phone,
-          surname,
-          firstName,
+          name,
           email,
         },
       },

@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { Article } from "@/types/articlesSection";
-import GenericListPage from "@/components/GenericListPage";
+import { ArticleCardProps } from "@/types/articles";
+import GenericListPage from "../../components/GenericListPage";
 
 interface PageProps {
   searchParams: Promise<{ page?: string; itemsPerPage?: string }>;
@@ -19,7 +19,7 @@ const AllArticles = async ({ searchParams }: PageProps) => {
     if (!res.ok) throw new Error("Ошибка загрузки");
     const data = await res.json();
 
-    const renderArticle = (article: Article) => (
+    const renderArticle = (article: ArticleCardProps) => (
       <article className="bg-white h-full flex flex-col rounded overflow-hidden shadow hover:shadow-lg duration-300">
         <div className="relative h-48 w-full">
           <Image
@@ -33,7 +33,7 @@ const AllArticles = async ({ searchParams }: PageProps) => {
         </div>
         <div className="p-4 flex-1 flex flex-col gap-y-2">
           <time className="text-xs text-gray-400">
-            {new Date(article.created_at).toLocaleDateString("ru-RU")}
+            {new Date(article.createdAt).toLocaleDateString("ru-RU")}
           </time>
           <h3 className="text-[#414141] text-base font-bold xl:text-lg line-clamp-2">
             {article.title}
