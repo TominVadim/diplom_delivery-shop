@@ -1,7 +1,7 @@
 "use client";
 
-import { initialRegFormData } from "@/constants/regFormData";
-import { RegFormData } from "@/types/regFormData";
+import { initialRegFormData } from "../constants/regFormData";
+import { RegFormData } from "../types/regFormData";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 type RegFormContextType = {

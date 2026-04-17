@@ -9,12 +9,12 @@ export const AuthFormLayout = ({
   children: React.ReactNode;
   variant?: AuthFormVariant;
 }) => (
-  <div className="absolute inset-0 z-100 flex items-center justify-center bg-[#fcd5bacc] min-h-screen text-[#414141] py-10 px-3 backdrop-blur-sm">
+  <div className="fixed inset-0 z-100 flex items-center justify-center bg-[#fcd5bacc] text-[#414141] p-4 backdrop-blur-sm overflow-y-auto">
     <div
-      className={`${variant === "register" ? "max-w-[687px]" : "max-w-105"} relative bg-white rounded shadow-(--shadow-auth-form) max-h-[calc(100vh-80px)] w-full flex flex-col px-6`}
+      className={`${variant === "register" ? "max-w-[687px]" : "max-w-[420px]"} relative bg-white rounded shadow-(--shadow-auth-form) w-full my-8`}
     >
       <CloseButton />
-      <div className="pt-18 pb-10 overflow-y-auto flex-1">{children}</div>
+      <div className="pt-16 pb-8 px-6">{children}</div>
     </div>
   </div>
 );

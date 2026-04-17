@@ -1,32 +1,18 @@
-import { validateBirthDate } from "./validateBirthDate";
+import { RegFormData } from "@/types/regFormData";
 
-export function validateRegisterForm(formData: {
-  phone: string;
-  lastName: string;
-  firstName: string;
-  password: string;
-  confirmPassword: string;
-  birthDate: string;
-  region: string;
-  location: string;
-  gender: string;
-  loyaltyCard?: string;
-  email?: string;
-  hasCard?: boolean;
-}): { isValid: boolean; errorMessage?: string } {
-
+export const validateRegisterForm = (formData: RegFormData) => {
   // Проверка телефона
-  if (!formData.phone || formData.phone.replace(/\D/g, "").length !== 11) {
+  if (!formData.phone || formData.phone === "+7" || formData.phone.replace(/\D/g, "").length < 11) {
     return {
       isValid: false,
-      errorMessage: "Введите корректный номер телефона (11 цифр)",
+      errorMessage: "Введите корректный номер телефона",
     };
   }
 
   // Проверка фамилии
   if (
-    !formData.lastName ||
-    !/^[а-яА-ЯёЁa-zA-Z-]{2,}$/.test(formData.lastName.trim())
+    !formData.surname ||
+    !/^[а-яА-ЯёЁa-zA-Z-]{2,}$/.test(formData.surname.trim())
   ) {
     return {
       isValid: false,
@@ -46,14 +32,11 @@ export function validateRegisterForm(formData: {
   }
 
   // Проверка пароля
-  if (
-    !formData.password ||
-    !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(formData.password)
-  ) {
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+  if (!formData.password || !passwordRegex.test(formData.password)) {
     return {
       isValid: false,
-      errorMessage:
-        "Пароль должен содержать 6+ символов, включая заглавные, строчные буквы и цифры",
+      errorMessage: "Пароль должен содержать минимум 6 символов, буквы и цифры",
     };
   }
 
@@ -66,11 +49,10 @@ export function validateRegisterForm(formData: {
   }
 
   // Проверка даты рождения
-  const birthDateValidation = validateBirthDate(formData.birthDate);
-  if (!birthDateValidation.isValid) {
+  if (!formData.birthdayDate || formData.birthdayDate.length < 10) {
     return {
       isValid: false,
-      errorMessage: birthDateValidation.error || "Некорректная дата рождения",
+      errorMessage: "Введите корректную дату рождения",
     };
   }
 
@@ -82,11 +64,11 @@ export function validateRegisterForm(formData: {
     };
   }
 
-  // Проверка города
+  // Проверка населенного пункта
   if (!formData.location) {
     return {
       isValid: false,
-      errorMessage: "Выберите город",
+      errorMessage: "Выберите населенный пункт",
     };
   }
 
@@ -94,29 +76,9 @@ export function validateRegisterForm(formData: {
   if (!formData.gender) {
     return {
       isValid: false,
-      errorMessage: "Укажите пол",
+      errorMessage: "Выберите пол",
     };
   }
 
-  // Проверка email (если указан)
-  if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-    return {
-      isValid: false,
-      errorMessage: "Введите корректный email",
-    };
-  }
-
-  // Проверка номера карты (если указан и не отмечено "нет карты")
-  if (
-    !formData.hasCard &&
-    formData.loyaltyCard &&
-    !/^\d{16}$/.test(formData.loyaltyCard.replace(/\s/g, ""))
-  ) {
-    return {
-      isValid: false,
-      errorMessage: "Номер карты должен содержать 16 цифр",
-    };
-  }
-
-  return { isValid: true };
-}
+  return { isValid: true, errorMessage: null };
+};

@@ -26,3 +26,9 @@ export const formStyles = {
   button: "w-full bg-[#2E7D64] text-white py-3 rounded-lg font-medium hover:bg-[#236B55] transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
   required: "text-red-500 ml-1",
 };
+
+export const verificationButtonStyles = `
+  relative flex flex-col items-center p-6 border-2 border-gray-100 
+  rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 
+  bg-white group overflow-hidden w-80
+`;

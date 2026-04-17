@@ -7,11 +7,11 @@ import { InputMask } from "@react-input/mask";
 interface PhoneInputProps {
   id: string;
   label: string;
-  value: string;
+  value?: string;
   onChangeAction: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const PhoneInput = ({ id, label, value, onChangeAction }: PhoneInputProps) => {
+const PhoneInput = ({ id, label, value = "+7", onChangeAction }: PhoneInputProps) => {
   return (
     <div>
       <label htmlFor={id} className={formStyles.label}>

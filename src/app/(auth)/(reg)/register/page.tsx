@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PhoneInput from "../../_components/PhoneInput";
-import PersonInput from "../PersonInput";
+import PersonInput from "../_components/PersonInput";
 import PasswordInput from "../../_components/PasswordInput";
 import DateInput from "../DateInput";
 import SelectRegion from "../SelectRegion";
@@ -13,15 +13,13 @@ import CardInput from "../CardInput";
 import CheckboxCard from "../CheckboxCard";
 import EmailInput from "../EmailInput";
 import RegFormFooter from "../RegFormFooter";
-import SuccessModal from "../SuccessModal";
 import { validateRegisterForm } from "../../../../utils/validation/form";
 import Loader from "../../../../components/Loader";
 import ErrorComponent from "../../../../components/ErrorComponent";
 import { AuthFormLayout } from "../../_components/AuthFormLayout";
-import { useRegFormContext } from "@/contexts/RegFormContext";
+import { useRegFormContext } from "../../../../contexts/RegFormContext";
 
 const RegisterPage = () => {
-  const { regFormData, setRegFormData, resetRegForm } = useRegFormContext();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<{
     error: Error;
@@ -29,7 +27,7 @@ const RegisterPage = () => {
   } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [invalidFormMessage, setInvalidFormMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
+  const { regFormData, setRegFormData } = useRegFormContext();
   const router = useRouter();
 
   const handleChange = (
@@ -46,7 +44,7 @@ const RegisterPage = () => {
       setRegFormData((prev) => ({
         ...prev,
         hasCard: true,
-        loyaltyCard: "",
+        card: "",
       }));
       return;
     }
@@ -75,13 +73,13 @@ const RegisterPage = () => {
         body: JSON.stringify({
           email: regFormData.email,
           password: regFormData.password,
-          name: `${regFormData.firstName} ${regFormData.lastName}`.trim(),
+          name: `${regFormData.firstName} ${regFormData.surname}`.trim(),
           phone: regFormData.phone,
-          birthDate: regFormData.birthDate,
+          birthDate: regFormData.birthdayDate,
           region: regFormData.region,
           location: regFormData.location,
           gender: regFormData.gender,
-          loyaltyCard: regFormData.hasCard ? null : regFormData.loyaltyCard,
+          loyaltyCard: regFormData.hasCard ? null : regFormData.card,
         }),
       });
 
@@ -91,7 +89,7 @@ const RegisterPage = () => {
         throw new Error(data.error || 'Ошибка регистрации');
       }
 
-      setIsSuccess(true);
+      router.replace("/login");
     } catch (err) {
       setError({
         error: err instanceof Error ? err : new Error('Ошибка регистрации'),
@@ -105,14 +103,6 @@ const RegisterPage = () => {
   const isFormValid = () => validateRegisterForm(regFormData).isValid;
 
   if (isLoading) return <Loader />;
-  if (isSuccess) {
-    const handleSuccessClose = () => {
-      setIsSuccess(false);
-      resetRegForm();
-      router.push("/");
-    };
-    return <SuccessModal onClose={handleSuccessClose} />;
-  }
   if (error)
     return (
       <ErrorComponent error={error.error} userMessage={error.userMessage} />
@@ -132,13 +122,15 @@ const RegisterPage = () => {
         <div className="w-full flex flex-row flex-wrap justify-center gap-x-8 gap-y-4">
           <div className="flex flex-col gap-y-4 items-start">
             <PhoneInput
+              id="phone"
+              label="Телефон *"
               value={regFormData.phone}
               onChangeAction={handleChange}
             />
             <PersonInput
-              id="lastName"
+              id="surname"
               label="Фамилия *"
-              value={regFormData.lastName}
+              value={regFormData.surname}
               onChange={handleChange}
             />
             <PersonInput
@@ -172,9 +164,9 @@ const RegisterPage = () => {
           </div>
           <div className="flex flex-col gap-y-4 items-start">
             <DateInput
-              value={regFormData.birthDate}
+              value={regFormData.birthdayDate}
               onChangeAction={(value) =>
-                setRegFormData((prev) => ({ ...prev, birthDate: value }))
+                setRegFormData((prev) => ({ ...prev, birthdayDate: value }))
               }
             />
             <SelectRegion
@@ -199,9 +191,9 @@ const RegisterPage = () => {
         <div className="w-full flex flex-row flex-wrap justify-center gap-x-8 gap-y-4">
           <div className="flex flex-col w-65 gap-y-4">
             <CardInput
-              id="loyaltyCard"
+              id="card"
               label="Номер карты"
-              value={regFormData.loyaltyCard || ""}
+              value={regFormData.card || ""}
               onChangeAction={handleChange}
               disabled={regFormData.hasCard}
             />

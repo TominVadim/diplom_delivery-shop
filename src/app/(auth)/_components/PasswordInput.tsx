@@ -1,34 +1,44 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
-import IconVision from '@/components/svg/IconVision';
-import Tooltip from './Tooltip';
+import IconVision from "../../../components/svg/IconVision";
+import Tooltip from '../(reg)/Tooltip';
 import { formStyles } from '../styles';
 
 interface PasswordInputProps {
   id: string;
   label: string;
-  value: string;
+  value?: string;
   onChangeAction: (event: React.ChangeEvent<HTMLInputElement>) => void;
   showRequirements?: boolean;
   compareWith?: string;
+  showPassword?: boolean;
+  togglePasswordVisibilityAction?: () => void;
 }
 
 const PasswordInput = ({
   id,
   label,
-  value,
+  value = "",
   onChangeAction,
   showRequirements = false,
   compareWith = '',
+  showPassword: externalShowPassword,
+  togglePasswordVisibilityAction,
 }: PasswordInputProps) => {
-  const [showPassword, setShowPassword] = useState(false);
-
+  const [internalShowPassword, setInternalShowPassword] = useState(false);
+  
+  const isControlled = externalShowPassword !== undefined && togglePasswordVisibilityAction !== undefined;
+  const showPassword = isControlled ? externalShowPassword : internalShowPassword;
+  
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    if (isControlled && togglePasswordVisibilityAction) {
+      togglePasswordVisibilityAction();
+    } else {
+      setInternalShowPassword(!internalShowPassword);
+    }
   };
 
-  // Регулярка: минимум 6 символов, латиница, хотя бы одна цифра
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
   const isPasswordValid = passwordRegex.test(value);
 
