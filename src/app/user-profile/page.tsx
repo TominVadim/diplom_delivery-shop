@@ -1,0 +1,64 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import ProfileHeader from "./_components/ProfileHeader";
+import SecuritySection from "./_components/SecuritySection";
+import Loader from "../../components/Loader";
+
+interface UserData {
+  name: string;
+  phone?: string;
+  email?: string;
+  phone_verified?: boolean;
+  email_verified?: boolean;
+}
+
+export default function ProfilePage() {
+  const [user, setUser] = useState<UserData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const loadUser = () => {
+      const userData = localStorage.getItem("user");
+      if (!userData) {
+        router.replace("/");
+        return;
+      }
+      try {
+        const parsed = JSON.parse(userData);
+        setUser(parsed);
+      } catch {
+        router.replace("/");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUser();
+  }, [router]);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (!user) {
+    return <Loader />;
+  }
+
+  return (
+    <div className="bg-[#fbf8ec] px-4 md:px-6 xl:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="animate-slide-in opacity translate-y-8">
+          <div className="bg-white rounded-xl shadow-xl overflow-hidden duration-700 ease-out">
+            <ProfileHeader name={user.name} />
+            <div className="p-6 md:p-8">
+              <SecuritySection user={user} setUser={setUser} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

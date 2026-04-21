@@ -64,7 +64,7 @@ const DateInput = ({ value, onChangeAction }: DateInputProps) => {
         <input
           id="birthdayDate"
           type="text"
-          value={value}
+          value={value || ""}
           onChange={handleInputChange}
           placeholder="дд.мм.гггг"
           className={`${formStyles.input} pr-8`}

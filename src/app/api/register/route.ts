@@ -2,6 +2,20 @@ import { NextResponse } from "next/server";
 import { query } from "../../../../utils/db";
 import bcrypt from "bcrypt";
 
+function parseBirthDate(dateStr: string): string | null {
+  if (!dateStr) return null;
+  
+  const parts = dateStr.split('.');
+  if (parts.length !== 3) return null;
+  
+  const [day, month, year] = parts;
+  
+  if (!day || !month || !year) return null;
+  if (isNaN(parseInt(day)) || isNaN(parseInt(month)) || isNaN(parseInt(year))) return null;
+  
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}
+
 export async function POST(request: Request) {
   try {
     const {
@@ -29,13 +43,14 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const formattedBirthDate = birthDate ? parseBirthDate(birthDate) : null;
 
     const result = await query(
       `INSERT INTO users
-        (phone, name, email, password_hash, birth_date, region, location, gender, loyalty_card, created_at, email_verified)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, true)
+        (phone, name, email, password_hash, birth_date, region, location, gender, loyalty_card, created_at, email_verified, phone_verified)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, true, true)
        RETURNING id`,
-      [phone, name, email || null, hashedPassword, birthDate || null, region || null, location || null, gender || null, loyaltyCard || null]
+      [phone, name, email || null, hashedPassword, formattedBirthDate, region || null, location || null, gender || null, loyaltyCard || null]
     );
 
     const userId = result.rows[0].id;
