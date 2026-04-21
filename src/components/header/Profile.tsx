@@ -5,47 +5,63 @@ import Image from "next/image";
 import iconArrow from "/public/icons-header/icon-arrow.svg";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import useAvatar from "../../hooks/useAvatar";
 
 const Profile = () => {
   const [userName, setUserName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [userGender, setUserGender] = useState<string | undefined>(undefined);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Функция для получения данных из localStorage
+  const { displayAvatar, isLoading: isAvatarLoading } = useAvatar({
+    userId: userId || undefined,
+    gender: userGender,
+  });
+
   const loadUserData = () => {
     const user = localStorage.getItem("user");
     if (user) {
       try {
         const parsed = JSON.parse(user);
         setUserName(parsed.name);
+        setUserId(parsed.id);
+        setUserGender(parsed.gender);
       } catch {
         setUserName(null);
+        setUserId(null);
+        setUserGender(undefined);
       }
     } else {
       setUserName(null);
+      setUserId(null);
+      setUserGender(undefined);
     }
   };
 
-  // Загрузка при монтировании
   useEffect(() => {
     loadUserData();
   }, []);
 
-  // Слушаем событие storage (для обновления при логине в другой вкладке)
-  // и кастомное событие для обновления в той же вкладке
   useEffect(() => {
     const handleStorageChange = () => {
       loadUserData();
     };
-    
+
+    const handleAvatarUpdate = () => {
+      loadUserData();
+    };
+
     window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("avatar-updated", handleAvatarUpdate);
     window.addEventListener("user-login", handleStorageChange);
-    
+
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("avatar-updated", handleAvatarUpdate);
       window.removeEventListener("user-login", handleStorageChange);
     };
   }, []);
@@ -74,7 +90,8 @@ const Profile = () => {
     try {
       localStorage.removeItem("user");
       setUserName(null);
-      // Диспатчим событие для обновления других компонентов
+      setUserId(null);
+      setUserGender(undefined);
       window.dispatchEvent(new Event("storage"));
       router.replace("/");
     } catch (error) {
@@ -110,8 +127,18 @@ const Profile = () => {
         className="flex items-center gap-2.5 cursor-pointer"
         onClick={toggleMenu}
       >
-        <div className="min-w-10 min-h-10 w-10 h-10 rounded-full bg-[#ff6633] flex items-center justify-center text-white font-bold">
-          {userName.charAt(0).toUpperCase()}
+        <div className="min-w-10 min-h-10 w-10 h-10 rounded-full bg-[#ff6633] flex items-center justify-center text-white font-bold overflow-hidden">
+          {!isAvatarLoading && displayAvatar ? (
+            <Image
+              src={displayAvatar}
+              alt="Аватар"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            userName.charAt(0).toUpperCase()
+          )}
         </div>
         <p className="hidden xl:block cursor-pointer p-2.5">{userName}</p>
         <div className="hidden xl:block">

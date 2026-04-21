@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProfileHeader from "./_components/ProfileHeader";
 import SecuritySection from "./_components/SecuritySection";
+import ProfileAvatar from "./_components/ProfileAvatar";
 import Loader from "../../components/Loader";
 
 interface UserData {
+  id: number;
   name: string;
   phone?: string;
   email?: string;
+  gender?: string;
   phone_verified?: boolean;
   email_verified?: boolean;
 }
@@ -54,6 +57,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-xl shadow-xl overflow-hidden duration-700 ease-out">
             <ProfileHeader name={user.name} />
             <div className="p-6 md:p-8">
+              <ProfileAvatar userId={user.id} gender={user.gender} />
               <SecuritySection user={user} setUser={setUser} />
             </div>
           </div>

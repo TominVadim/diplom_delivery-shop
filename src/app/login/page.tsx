@@ -50,7 +50,15 @@ const LoginPage = () => {
         throw new Error(data.message || "Ошибка авторизации");
       }
 
-      localStorage.setItem("user", JSON.stringify({ name: data.user.name }));
+      localStorage.setItem("user", JSON.stringify({
+        id: data.user.id,
+        name: data.user.name,
+        phone: data.user.phone,
+        email: data.user.email,
+        gender: data.user.gender,
+        phone_verified: data.user.phone_verified,
+        email_verified: data.user.email_verified,
+      }));
       
       // Диспатчим событие для обновления Profile
       window.dispatchEvent(new Event("user-login"));
