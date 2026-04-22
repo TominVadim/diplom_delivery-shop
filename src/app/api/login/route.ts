@@ -13,9 +13,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ищем пользователя по телефону (без нормализации, так как в БД хранится с маской)
+    // Ищем пользователя по телефону
     const result = await query(
-      `SELECT id, phone, name, email, password_hash, region, location, gender, loyalty_card 
+      `SELECT id, phone, name, email, password_hash, region, location, gender, loyalty_card, has_card
        FROM users WHERE phone = $1`,
       [phone]
     );
@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
         region: user.region,
         location: user.location,
         gender: user.gender,
-        loyaltyCard: user.loyalty_card,
+        loyalty_card: user.loyalty_card,
+        has_card: user.has_card,
       },
     };
 

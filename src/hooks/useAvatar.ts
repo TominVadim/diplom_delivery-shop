@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getAvatarByGender } from "../utils/getAvatarByGender";
+import { checkAvatarExists } from "../utils/avatarUtils";
 
 interface UseAvatarProps {
   userId?: string | number;
@@ -25,6 +26,15 @@ const useAvatar = ({ userId, gender = "male" }: UseAvatarProps) => {
     setIsLoading(true);
 
     try {
+      // Сначала проверяем, есть ли аватар
+      const exists = await checkAvatarExists(userId);
+      
+      if (!exists) {
+        setCurrentAvatar(getAvatarByGender(gender));
+        return;
+      }
+
+      // Если есть, загружаем
       const response = await fetch(`/api/auth/avatar/${userId}?t=${Date.now()}`);
 
       if (response.ok) {

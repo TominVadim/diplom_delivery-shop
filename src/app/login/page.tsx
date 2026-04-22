@@ -51,6 +51,8 @@ const LoginPage = () => {
       }
 
       localStorage.setItem("user", JSON.stringify({
+        loyalty_card: data.user.loyalty_card,
+        has_card: data.user.has_card,
         location: data.user.location,
         id: data.user.id,
         name: data.user.name,

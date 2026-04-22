@@ -99,22 +99,22 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ user, setUser }) => {
             {error}
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex flex-col lg:flex-row gap-4">
           <button
             onClick={logoutFromProfile}
-            className="flex flex-1 items-center justify-center h-12 bg-[#f3f2f1] text-[#606060] px-4 py-2 rounded font-medium hover:shadow-md active:shadow-inner duration-300 cursor-pointer"
+            className="flex-1 flex items-center justify-center h-12 bg-[#f3f2f1] text-[#606060] px-4 py-2 rounded font-medium hover:shadow-md active:shadow-inner duration-300 cursor-pointer whitespace-nowrap"
           >
             Выйти из личного кабинета
           </button>
           <button
             onClick={handleAppLogout}
-            className="flex-1 bg-[#f3f2f1] border-none rounded flex hover:shadow-md px-4 py-2 justify-center items-center active:shadow-inner disabled:opacity-50 disabled:cursor-not-allowed h-12 text-[#606060] font-medium duration-300 cursor-pointer"
+            className="flex-1 bg-[#f3f2f1] border-none rounded flex hover:shadow-md px-4 py-2 justify-center items-center active:shadow-inner disabled:opacity-50 disabled:cursor-not-allowed h-12 text-[#606060] font-medium duration-300 cursor-pointer whitespace-nowrap"
           >
             Выйти из приложения
           </button>
           <button
             onClick={handleOpenDeleteModal}
-            className="bg-[#ffc7c7] hover:bg-[#d80000] text-[#d80000] hover:text-[#f2f2f2] px-4 py-2 h-12 rounded font-medium duration-300 text-center cursor-pointer"
+            className="flex-1 bg-[#ffc7c7] hover:bg-[#d80000] text-[#d80000] hover:text-[#f2f2f2] px-4 py-2 h-12 rounded font-medium duration-300 text-center cursor-pointer whitespace-nowrap"
           >
             Удалить аккаунт
           </button>

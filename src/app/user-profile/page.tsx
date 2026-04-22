@@ -6,6 +6,8 @@ import ProfileHeader from "./_components/ProfileHeader";
 import SecuritySection from "./_components/SecuritySection";
 import ProfileAvatar from "./_components/ProfileAvatar";
 import LocationSection from "./_components/LocationSection";
+import ProfileCard from "./_components/ProfileCard";
+import ProfilePassword from "./_components/ProfilePassword";
 import Loader from "../../components/Loader";
 
 interface UserData {
@@ -15,6 +17,8 @@ interface UserData {
   email?: string;
   gender?: string;
   location?: string;
+  loyalty_card?: string;
+  has_card?: boolean;
   phone_verified?: boolean;
   email_verified?: boolean;
 }
@@ -70,6 +74,8 @@ export default function ProfilePage() {
                   window.dispatchEvent(new Event("user-login"));
                 }}
               />
+              <ProfileCard user={user} setUser={setUser} />
+              <ProfilePassword user={user} />
               <SecuritySection user={user} setUser={setUser} />
             </div>
           </div>
