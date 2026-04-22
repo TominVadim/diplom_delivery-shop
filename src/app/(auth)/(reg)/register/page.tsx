@@ -6,8 +6,8 @@ import PhoneInput from "../../_components/PhoneInput";
 import PersonInput from "../_components/PersonInput";
 import PasswordInput from "../../_components/PasswordInput";
 import DateInput from "../DateInput";
-import SelectRegion from "../SelectRegion";
 import SelectCity from "../SelectCity";
+import SelectRegionPlaceholder from "../_components/SelectRegionPlaceholder";
 import GenderSelect from "../GenderSelect";
 import CardInput from "../CardInput";
 import CheckboxCard from "../CheckboxCard";
@@ -169,7 +169,7 @@ const RegisterPage = () => {
                 setRegFormData((prev) => ({ ...prev, birthdayDate: value }))
               }
             />
-            <SelectRegion
+            <SelectRegionPlaceholder
               value={regFormData.region}
               onChangeAction={handleChange}
             />

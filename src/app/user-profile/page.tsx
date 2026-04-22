@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ProfileHeader from "./_components/ProfileHeader";
 import SecuritySection from "./_components/SecuritySection";
 import ProfileAvatar from "./_components/ProfileAvatar";
+import LocationSection from "./_components/LocationSection";
 import Loader from "../../components/Loader";
 
 interface UserData {
@@ -13,6 +14,7 @@ interface UserData {
   phone?: string;
   email?: string;
   gender?: string;
+  location?: string;
   phone_verified?: boolean;
   email_verified?: boolean;
 }
@@ -58,6 +60,16 @@ export default function ProfilePage() {
             <ProfileHeader name={user.name} />
             <div className="p-6 md:p-8">
               <ProfileAvatar userId={user.id} gender={user.gender} />
+              <LocationSection
+                userId={user.id}
+                initialLocation={user.location || ""}
+                onUpdate={(data) => {
+                  const updatedUser = { ...user, ...data };
+                  setUser(updatedUser);
+                  localStorage.setItem("user", JSON.stringify(updatedUser));
+                  window.dispatchEvent(new Event("user-login"));
+                }}
+              />
               <SecuritySection user={user} setUser={setUser} />
             </div>
           </div>
