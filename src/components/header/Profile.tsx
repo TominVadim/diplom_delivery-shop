@@ -11,6 +11,7 @@ const Profile = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
   const [userGender, setUserGender] = useState<string | undefined>(undefined);
+  const [userRole, setUserRole] = useState<string>("user");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -22,6 +23,13 @@ const Profile = () => {
     gender: userGender,
   });
 
+  const getDisplayName = () => {
+    if (!userName) return "";
+    if (userRole === "manager") return "Менеджер";
+    if (userRole === "admin") return "Администратор";
+    return userName;
+  };
+
   const loadUserData = () => {
     const user = localStorage.getItem("user");
     if (user) {
@@ -30,15 +38,18 @@ const Profile = () => {
         setUserName(parsed.name);
         setUserId(parsed.id);
         setUserGender(parsed.gender);
+        setUserRole(parsed.role || "user");
       } catch {
         setUserName(null);
         setUserId(null);
         setUserGender(undefined);
+        setUserRole("user");
       }
     } else {
       setUserName(null);
       setUserId(null);
       setUserGender(undefined);
+      setUserRole("user");
     }
   };
 
@@ -89,9 +100,12 @@ const Profile = () => {
     setIsLoggingOut(true);
     try {
       localStorage.removeItem("user");
+      // Удаляем cookie для middleware
+      document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       setUserName(null);
       setUserId(null);
       setUserGender(undefined);
+      setUserRole("user");
       window.dispatchEvent(new Event("storage"));
       router.replace("/");
     } catch (error) {
@@ -140,7 +154,7 @@ const Profile = () => {
             userName.charAt(0).toUpperCase()
           )}
         </div>
-        <p className="hidden xl:block cursor-pointer p-2.5">{userName}</p>
+        <p className="hidden xl:block cursor-pointer p-2.5">{getDisplayName()}</p>
         <div className="hidden xl:block">
           <Image
             src={iconArrow}
@@ -178,6 +192,15 @@ const Profile = () => {
         >
           Главная
         </Link>
+        {(userRole === "admin" || userRole === "manager") && (
+          <Link
+            href="/administrator"
+            className="block px-4 py-3 text-[#414141] hover:text-[#ff6633] duration-300 border-t border-gray-200"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Панель управления
+          </Link>
+        )}
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}

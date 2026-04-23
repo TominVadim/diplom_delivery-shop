@@ -50,22 +50,28 @@ const LoginPage = () => {
         throw new Error(data.message || "Ошибка авторизации");
       }
 
-      localStorage.setItem("user", JSON.stringify({
-        loyalty_card: data.user.loyalty_card,
-        has_card: data.user.has_card,
-        location: data.user.location,
+      const userData = {
         id: data.user.id,
         name: data.user.name,
         phone: data.user.phone,
         email: data.user.email,
         gender: data.user.gender,
+        location: data.user.location,
+        loyalty_card: data.user.loyalty_card,
+        has_card: data.user.has_card,
+        role: data.user.role || 'user',
         phone_verified: data.user.phone_verified,
         email_verified: data.user.email_verified,
-      }));
-      
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // Устанавливаем cookie для middleware (expires через 7 дней)
+      document.cookie = `user=${JSON.stringify({ id: userData.id, role: userData.role })}; path=/; max-age=604800`;
+
       // Диспатчим событие для обновления Profile
       window.dispatchEvent(new Event("user-login"));
-      
+
       router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка авторизации");

@@ -1,37 +1,73 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import fetchPurchases from "../app/purchases/fetchPurchases";
 import ProductsSection from "./ProductsSection";
+import ErrorComponent from "./ErrorComponent";
 import { ProductCardProps } from "@/types/product";
+import Loader from "./Loader";
 
 const Purchases = () => {
-  const [products, setProducts] = useState<ProductCardProps[]>([]);
+  const [shouldShow, setShouldShow] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [items, setItems] = useState<ProductCardProps[]>([]);
 
   useEffect(() => {
-    const fetchPurchases = async () => {
+    const checkAccessAndFetchData = async () => {
       try {
-        setLoading(true);
-        const response = await fetch("/api/users/purchases?userPurchasesLimit=4");
-        if (!response.ok) throw new Error("Ошибка загрузки");
-        const data = await response.json();
-        setProducts(data.products || []);
+        // Проверяем авторизацию и роль
+        const userStr = localStorage.getItem("user");
+        let hasAccess = false;
+        
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            const role = user.role || "user";
+            hasAccess = role === "user";
+          } catch {
+            hasAccess = false;
+          }
+        }
+        
+        setShouldShow(hasAccess);
+
+        if (hasAccess) {
+          const result = await fetchPurchases({
+            userPurchasesLimit: 10, // CONFIG.ITEMS_PER_PAGE_MAIN_PRODUCTS
+          });
+          setItems(result.items);
+        }
       } catch (err) {
-        setError("Не удалось загрузить ваши покупки");
+        setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPurchases();
+    checkAccessAndFetchData();
   }, []);
 
-  if (loading) return <ProductsSection title="Покупали раньше" products={[]} loading />;
-  if (error) return <div className="text-red-500 text-center py-4">{error}</div>;
-  if (products.length === 0) return null;
+  if (!shouldShow) return null;
 
-  return <ProductsSection title="Покупали раньше" products={products} viewAllLink="/purchases" />;
+  if (loading) return <Loader />;
+
+  if (error) {
+    return (
+      <ErrorComponent
+        error={error}
+        userMessage="Не удалось загрузить Ваши покупки"
+      />
+    );
+  }
+
+  return (
+    <ProductsSection
+      title="Покупали раньше"
+      viewAllButton={{ text: "Все покупки", href: "/purchases" }}
+      products={items}
+    />
+  );
 };
 
 export default Purchases;
