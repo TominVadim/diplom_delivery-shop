@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       const rLimit = parseInt(randomLimit);
       const result = await query(
         `SELECT
-          id, img, title, description,
+          id, img, name, description,
           base_price as "basePrice",
           discount_percent as "discountPercent",
           jsonb_build_object('rate', rating_rate, 'count', rating_count) as rating,
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
     // Пагинированный список
     const productsResult = await query(
       `SELECT
-        id, img, title, description,
+        id, img, name, description,
         base_price as "basePrice",
         discount_percent as "discountPercent",
         jsonb_build_object('rate', rating_rate, 'count', rating_count) as rating,

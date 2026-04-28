@@ -10,6 +10,7 @@ const cardDiscountPercent = CONFIG.CARD_DISCOUNT_PERCENT;
 
 const ProductCard = ({
   id,
+  name,
   img,
   description,
   basePrice,
@@ -35,7 +36,7 @@ const ProductCard = ({
     ? basePrice
     : calculatePriceByCard(finalPrice, cardDiscountPercent);
 
-  const ratingValue = rating?.rate || 5;
+  const ratingValue = rating?.count > 0 ? (rating?.rate || 0) : 0;
 
   return (
     <div className="relative flex flex-col justify-between w-40 rounded overflow-hidden bg-white md:w-[224px] xl:w-[272px] h-[349px] align-top p-0 hover:shadow-(--shadow-article) duration-300">
@@ -48,8 +49,7 @@ const ProductCard = ({
           sizes="24px"
         />
       </button>
-      <Link href={`/product/${id}`}>
-        <div className="relative aspect-square w-40 h-40 md:w-[224px] xl:w-[272px]">
+      <Link href={`/product/${id}?desc=${encodeURIComponent(name)}&category=${tags?.[0] || ""}`}>        <div className="relative aspect-square w-40 h-40 md:w-[224px] xl:w-[272px]">
           <Image
             src={img}
             alt="Акция"

@@ -44,18 +44,43 @@ const AdminPanel = () => {
             <p className="text-gray-400 text-sm">Управление заказами (в разработке)</p>
           </div>
 
-          {/* Товары (placeholder) */}
-          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 opacity-60">
+          {/* Список товаров */}
+          <Link
+            href="/administrator/products/products-list"
+            className="block bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-100"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-[#414141]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </div>
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-[#414141] mb-2">Список товаров</h3>
+            <p className="text-gray-500 text-sm">Поиск, редактирование и удаление товаров</p>
+          </Link>
+
+          {/* Добавить товар */}
+          <Link
+            href="/administrator/products/add-product"
+            className="block bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-100"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#414141]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-400 mb-2">Товары</h3>
-            <p className="text-gray-400 text-sm">Управление товарами (в разработке)</p>
-          </div>
+            <h3 className="text-xl font-semibold text-[#414141] mb-2">Добавить товар</h3>
+            <p className="text-gray-500 text-sm">Добавление нового товара в каталог</p>
+          </Link>
         </div>
       </div>
     </div>

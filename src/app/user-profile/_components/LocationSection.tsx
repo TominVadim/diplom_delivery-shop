@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect } from "react";
 import { cities } from "../../../data/cities";
 
 interface LocationSectionProps {
@@ -23,7 +23,7 @@ const LocationSection = ({
     setLocation(initialLocation);
   }, [initialLocation]);
 
-  const handleCityChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setLocation(e.target.value);
     setError("");
   };
@@ -70,7 +70,7 @@ const LocationSection = ({
   };
 
   return (
-    <div className="border-t pt-8 mt-6">
+    <div className="pt-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-[#414141]">Город</h2>
         {!isEditing && (
@@ -89,15 +89,11 @@ const LocationSection = ({
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-[#414141] mb-1">
-          Населенный пункт
-        </label>
+      {isEditing ? (
         <select
           value={location}
-          disabled={!isEditing}
           onChange={handleCityChange}
-          className={`w-full p-3 border border-[#e5e5e5] rounded bg-white disabled:bg-[#f3f2f1] disabled:cursor-not-allowed`}
+          className="w-full p-3 border border-[#e5e5e5] rounded bg-white"
         >
           {cities.map((city) => (
             <option key={city.value} value={city.label}>
@@ -105,7 +101,11 @@ const LocationSection = ({
             </option>
           ))}
         </select>
-      </div>
+      ) : (
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <p className="text-gray-700">{initialLocation || "Не указан"}</p>
+        </div>
+      )}
 
       {isEditing && (
         <div className="flex gap-3 mt-4">

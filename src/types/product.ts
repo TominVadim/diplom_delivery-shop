@@ -1,7 +1,7 @@
 export interface ProductCardProps {
   id: number;           // было _id: number
   img: string;
-  title: string;
+  name: string;
   description: string;
   basePrice: number;
   discountPercent?: number;

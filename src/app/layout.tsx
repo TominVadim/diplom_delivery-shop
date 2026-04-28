@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "../components/header/Header";
 import Footer from "../components/Footer";
+import { Suspense } from "react";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { RegFormProvider } from "@/contexts/RegFormContext";
 
@@ -37,7 +38,7 @@ export default function RootLayout({
       <body className={`${rubik.variable} font-sans`}>
         <RegFormProvider>
           <Header />
-          <Breadcrumbs />
+          <Suspense fallback={<div />}><Breadcrumbs /></Suspense>
           {children}
           <Footer />
         </RegFormProvider>

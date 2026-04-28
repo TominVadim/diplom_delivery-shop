@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { CONFIG } from "../../../../config/config";
@@ -16,7 +17,7 @@ interface PriceFilterProps {
   setIsFilterOpenAction?: (value: boolean) => void;
 }
 
-const PriceFilter = ({ basePath, category, setIsFilterOpenAction }: PriceFilterProps) => {
+const PriceFilterContent = ({ basePath, category, setIsFilterOpenAction }: PriceFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlPriceFrom = searchParams.get("priceFrom") || "";
@@ -176,6 +177,14 @@ const PriceFilter = ({ basePath, category, setIsFilterOpenAction }: PriceFilterP
         Применить
       </button>
     </form>
+  );
+};
+
+const PriceFilter = (props: PriceFilterProps) => {
+  return (
+    <Suspense fallback={<MiniLoader />}>
+      <PriceFilterContent {...props} />
+    </Suspense>
   );
 };
 

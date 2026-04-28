@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -8,11 +9,11 @@ interface FilterControlsProps {
   basePath: string;
 }
 
-const FilterControls = ({ basePath }: FilterControlsProps) => {
+const FilterControlsContent = ({ basePath }: FilterControlsProps) => {
   const searchParams = useSearchParams();
   const currentFilters = searchParams.getAll("filter");
   const activeFilterCount = currentFilters.length;
-  
+
   const minPrice = searchParams.get("priceFrom");
   const maxPrice = searchParams.get("priceTo");
   const hasPriceFilter = !!(minPrice || maxPrice);
@@ -50,7 +51,7 @@ const FilterControls = ({ basePath }: FilterControlsProps) => {
           <span>Фильтр{totalActiveFilters > 1 ? `ы ${totalActiveFilters}` : totalActiveFilters === 1 ? " 1" : ""}</span>
         </div>
       )}
-      
+
       {hasPriceFilter && (
         <div className="h-8 p-2 rounded text-xs flex justify-center items-center duration-300 gap-x-2 bg-[#70c05b] text-white">
           <Link
@@ -69,7 +70,7 @@ const FilterControls = ({ basePath }: FilterControlsProps) => {
           </Link>
         </div>
       )}
-      
+
       {activeFilterCount > 0 && (
         <div className="h-8 p-2 rounded text-xs flex justify-center items-center duration-300 gap-x-2 bg-[#70c05b] text-white">
           <Link
@@ -88,6 +89,18 @@ const FilterControls = ({ basePath }: FilterControlsProps) => {
         </div>
       )}
     </div>
+  );
+};
+
+const FilterControls = (props: FilterControlsProps) => {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-row flex-wrap gap-x-6 gap-y-3 animate-pulse">
+        <div className="h-8 w-32 bg-gray-200 rounded"></div>
+      </div>
+    }>
+      <FilterControlsContent {...props} />
+    </Suspense>
   );
 };
 

@@ -62,7 +62,7 @@ export async function fetchProductsByCategory(slug: string, options: FetchProduc
   // Data query
   const productsResult = await query(
     `SELECT
-      p.id, p.img, p.title, p.description,
+      p.id, p.img, p.name, p.description,
       p.base_price as "basePrice",
       p.discount_percent as "discountPercent",
       jsonb_build_object('rate', p.rating_rate, 'count', p.rating_count) as rating,

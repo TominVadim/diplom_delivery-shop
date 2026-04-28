@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Loader from "@/components/Loader";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -7,7 +8,7 @@ import { ProductCardProps } from "@/types/product";
 import ProductsSection from "@/components/ProductsSection";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
-export default function SearchContent() {
+const SearchContentInner = () => {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const [products, setProducts] = useState<ProductCardProps[]>([]);
@@ -48,16 +49,24 @@ export default function SearchContent() {
         <span className="text-[#ff6633]">"{query}"</span>
       </h1>
 
-      {products.length === 0 ? (
-        <p className="text-[#8f8f8f]">По вашему запросу "{query}" ничего не найдено</p>
-      ) : (
+      {products.length > 0 ? (
         <ProductsSection
-          title=""
           products={products}
-          applyIndexStyles={false}
-          marginBottom={24}
+          title=""
+          showViewAll={false}
+          columnsLayout="grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
         />
+      ) : (
+        <p className="text-gray-500">Ничего не найдено</p>
       )}
     </div>
+  );
+};
+
+export default function SearchContent() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <SearchContentInner />
+    </Suspense>
   );
 }

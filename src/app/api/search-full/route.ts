@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const result = await query(
       `SELECT
         id,
-        title,
+        name,
         description,
         base_price,
         discount_percent,
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         tags,
         quantity
       FROM products
-      WHERE (title ILIKE $1 OR description ILIKE $1)
+      WHERE (name ILIKE $1 OR description ILIKE $1)
         AND quantity > 0
       ORDER BY id`,
       [`%${searchQuery}%`]

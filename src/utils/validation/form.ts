@@ -56,14 +56,6 @@ export const validateRegisterForm = (formData: RegFormData) => {
     };
   }
 
-  // Проверка региона
-  if (!formData.region) {
-    return {
-      isValid: false,
-      errorMessage: "Выберите регион",
-    };
-  }
-
   // Проверка населенного пункта
   if (!formData.location) {
     return {

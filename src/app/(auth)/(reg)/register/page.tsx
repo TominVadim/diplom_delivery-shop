@@ -76,7 +76,7 @@ const RegisterPage = () => {
           name: `${regFormData.firstName} ${regFormData.surname}`.trim(),
           phone: regFormData.phone,
           birthDate: regFormData.birthdayDate,
-          region: regFormData.region,
+          // region: regFormData.region,
           location: regFormData.location,
           gender: regFormData.gender,
           loyaltyCard: regFormData.hasCard ? null : regFormData.card,
@@ -170,7 +170,7 @@ const RegisterPage = () => {
               }
             />
             <SelectRegionPlaceholder
-              value={regFormData.region}
+              value={regFormData.region || ""}
               onChangeAction={handleChange}
             />
             <SelectCity

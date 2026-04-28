@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -9,7 +10,7 @@ const FILTERS = [
   { key: "non_gmo", label: "Без ГМО" },
 ];
 
-const FilterButtons = ({ basePath }: { basePath: string }) => {
+const FilterButtonsContent = ({ basePath }: { basePath: string }) => {
   const searchParams = useSearchParams();
   const currentFilters = searchParams.getAll("filter");
 
@@ -50,6 +51,20 @@ const FilterButtons = ({ basePath }: { basePath: string }) => {
         );
       })}
     </div>
+  );
+};
+
+const FilterButtons = ({ basePath }: { basePath: string }) => {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-row flex-wrap gap-4 justify-center animate-pulse">
+        <div className="h-8 w-40 bg-gray-200 rounded"></div>
+        <div className="h-8 w-32 bg-gray-200 rounded"></div>
+        <div className="h-8 w-24 bg-gray-200 rounded"></div>
+      </div>
+    }>
+      <FilterButtonsContent basePath={basePath} />
+    </Suspense>
   );
 };
 

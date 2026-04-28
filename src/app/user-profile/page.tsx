@@ -8,6 +8,7 @@ import ProfileAvatar from "./_components/ProfileAvatar";
 import LocationSection from "./_components/LocationSection";
 import ProfileCard from "./_components/ProfileCard";
 import ProfilePassword from "./_components/ProfilePassword";
+import ProfileName from "./_components/ProfileName";
 import Loader from "../../components/Loader";
 
 interface UserData {
@@ -64,6 +65,16 @@ export default function ProfilePage() {
             <ProfileHeader name={user.name} />
             <div className="p-6 md:p-8">
               <ProfileAvatar userId={user.id} gender={user.gender} />
+              <ProfileName
+                userId={user.id}
+                initialName={user.name || ""}
+                onUpdate={(data) => {
+                  const updatedUser = { ...user, ...data };
+                  setUser(updatedUser);
+                  localStorage.setItem("user", JSON.stringify(updatedUser));
+                  window.dispatchEvent(new Event("user-login"));
+                }}
+              />
               <LocationSection
                 userId={user.id}
                 initialLocation={user.location || ""}

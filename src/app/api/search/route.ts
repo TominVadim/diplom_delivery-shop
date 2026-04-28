@@ -14,10 +14,10 @@ export async function GET(request: Request) {
     const productsResult = await query(
       `SELECT 
         id, 
-        title, 
+        name, 
         tags as categories
       FROM products
-      WHERE (title ILIKE $1 OR description ILIKE $1)
+      WHERE (name ILIKE $1 OR description ILIKE $1)
         AND quantity > 0`,
       [`%${searchQuery}%`]
     );
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
         groupedByCategory[normalizedCategory].push({
           id: product.id,
-          title: product.title,
+          name: product.name,
           categories: product.categories,
         });
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CONFIG } from "../../config/config";
 import { debounce } from "../../utils/debounce";
@@ -22,7 +22,7 @@ function getItemsPerPageByWidth(contentType?: string) {
   return 4;
 }
 
-const PaginationWrapper = ({
+function PaginationWrapperContent({
   totalItems,
   currentPage,
   basePath,
@@ -32,7 +32,7 @@ const PaginationWrapper = ({
   currentPage: number;
   basePath: string;
   contentType?: string;
-}) => {
+}) {
   let initialItemsPerPage: number;
 
   if (contentType === "article") {
@@ -47,7 +47,6 @@ const PaginationWrapper = ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Функция для получения текущих параметров с правильным itemsPerPage
   const getCurrentParams = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("itemsPerPage", itemsPerPage.toString());
@@ -87,6 +86,17 @@ const PaginationWrapper = ({
       searchQuery={getCurrentParams().toString()}
     />
   );
-};
+}
 
-export default PaginationWrapper;
+export default function PaginationWrapper(props: {
+  totalItems: number;
+  currentPage: number;
+  basePath: string;
+  contentType?: string;
+}) {
+  return (
+    <Suspense fallback={<div className="h-16 w-full" />}>
+      <PaginationWrapperContent {...props} />
+    </Suspense>
+  );
+}

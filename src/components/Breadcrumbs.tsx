@@ -1,22 +1,49 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import iconToRight from "/public/icons-products/icon-arrow-right.svg";
 import { TRANSLATIONS } from "../../utils/translations";
 
-const Breadcrumbs = () => {
+const BreadcrumbsContent = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   if (pathname === "/" || pathname === "/search") return null;
 
   const pathSegments = pathname.split("/").filter((segment) => segment !== "");
+  const productDesc = searchParams.get("desc");
+  const productCategory = searchParams.get("category");
 
   const breadcrumbs = pathSegments.map((segment, index) => {
-    const href = "/" + pathSegments.slice(0, index + 1).join("/");
+    let href = "/" + pathSegments.slice(0, index + 1).join("/");
+    let label = TRANSLATIONS[segment] || segment;
+
+    // Для сегмента "product" подставляем категорию
+    if (segment === "product" && productCategory) {
+      label = TRANSLATIONS[productCategory] || productCategory;
+      href = `/category/${productCategory}`;
+    }
+
+    // Для сегмента "category" перенаправляем на /catalog
+    if (segment === "category") {
+      href = "/catalog";
+      label = "Каталог";
+    }
+
+    if (
+      index === pathSegments.length - 1 &&
+      productDesc &&
+      pathSegments.includes("product")
+    ) {
+      label = productDesc;
+      href = `${href}?desc=${encodeURIComponent(productDesc)}`;
+    }
+
     return {
-      label: TRANSLATIONS[segment] || segment,
+      label,
       href,
       isLast: index === pathSegments.length - 1,
     };
@@ -61,6 +88,22 @@ const Breadcrumbs = () => {
         ))}
       </ol>
     </nav>
+  );
+};
+
+const Breadcrumbs = () => {
+  return (
+    <Suspense fallback={
+      <div className="px-[max(12px,calc((100%-1208px)/2))] my-6 animate-pulse">
+        <div className="flex items-center gap-4">
+          <div className="h-4 w-16 bg-gray-200 rounded"></div>
+          <div className="h-4 w-4 bg-gray-200 rounded"></div>
+          <div className="h-4 w-24 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    }>
+      <BreadcrumbsContent />
+    </Suspense>
   );
 };
 
