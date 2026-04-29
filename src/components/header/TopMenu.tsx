@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import iconHeart from "/public/icons-header/icon-heart.svg";
 import iconCart from "/public/icons-header/icon-cart.svg";
 import IconMenuMob from "../svg/IconMenuMob";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import IconBox from "../svg/IconBox";
+import IconHeart from "../svg/IconHeart";
 
 const TopMenu = () => {
   const pathname = usePathname();
   const isCatalogPage = pathname === "/catalog";
+  const isFavoritesPage = pathname === "/favorites";
   const [userRole, setUserRole] = useState<string>("user");
 
   useEffect(() => {
@@ -56,25 +57,23 @@ const TopMenu = () => {
           </span>
         </li>
       </Link>
-      
+
       {!isManagerOrAdmin && (
-        <li className="flex flex-col items-center gap-2.5 w-11 cursor-pointer">
-          <Image
-            src={iconHeart}
-            alt="Избранное"
-            width={24}
-            height={24}
-            className="object-contain w-6 h-6"
-          />
-          <span>Избранное</span>
-        </li>
+        <Link href="/favorites">
+          <li className="flex flex-col items-center gap-2.5 w-11 cursor-pointer">
+            <IconHeart isActive={isFavoritesPage} variant="orange" />
+            <span className={isFavoritesPage ? "text-[#ff6633]" : "text-[#414141]"}>
+              Избранное
+            </span>
+          </li>
+        </Link>
       )}
 
       <li className="flex flex-col items-center gap-2.5 w-11 cursor-pointer">
         <IconBox />
         <span className={isManagerOrAdmin ? "text-[#ff6633]" : ""}>Заказы</span>
       </li>
-      
+
       {!isManagerOrAdmin && (
         <li className="flex flex-col items-center gap-2.5 w-11 cursor-pointer">
           <Image

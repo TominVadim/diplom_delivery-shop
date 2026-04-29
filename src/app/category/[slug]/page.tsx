@@ -9,6 +9,7 @@ import FilterButtons from "./FilterButtons";
 import FilterControls from "./FilterControls";
 import PriceFilter from "./PriceFilter";
 import DropFilter from "./DropFilter";
+import { cookies } from "next/headers";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -31,8 +32,25 @@ async function getCategoryBySlug(slug: string) {
   return result.rows[0] || null;
 }
 
+async function getServerUserId(): Promise<number | null> {
+  try {
+    const cookieStore = await cookies();
+    const userCookie = cookieStore.get("user");
+    console.log("getServerUserId: userCookie", userCookie?.value);
+    if (!userCookie?.value) return null;
+    const userData = JSON.parse(userCookie.value);
+    console.log("getServerUserId: userId", userData.id);
+    return userData.id || null;
+  } catch (error) {
+    console.error("getServerUserId error:", error);
+    return null;
+  }
+}
+
 async function CategoryContent({ slug, searchParams }: { slug: string; searchParams: any }) {
   const category = await getCategoryBySlug(slug);
+  const userId = await getServerUserId();
+  console.log("CategoryContent: userId", userId);
 
   if (!category) {
     notFound();
@@ -73,24 +91,20 @@ async function CategoryContent({ slug, searchParams }: { slug: string; searchPar
       <h1 className="text-[36px] md:text-[48px] font-bold text-[#414141] mb-6 md:mb-8 xl:mb-10 max-w-[336px] md:max-w-none leading-[150%]">
         {category.title}
       </h1>
-      
-      {/* Мобильная версия - кнопка фильтра */}
+
       <DropFilter basePath={basePath} category={slug} />
-      
+
       <div className="flex flex-row gap-10 justify-between">
-        {/* Десктопная версия - левый сайдбар */}
         <div className="hidden xl:block w-[272px] flex-shrink-0">
           <PriceFilter basePath={basePath} category={slug} />
         </div>
 
-        {/* Правая колонка - контент */}
         <div className="flex-1 flex flex-col gap-y-6 md:gap-y-8 xl:gap-y-10">
-          {/* Десктоп: FilterButtons и FilterControls в одной колонке */}
           <div className="hidden xl:flex xl:flex-col xl:gap-y-6">
             <FilterButtons basePath={basePath} />
             <FilterControls basePath={basePath} />
           </div>
-          
+
           {items.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               Товары не найдены
@@ -100,11 +114,11 @@ async function CategoryContent({ slug, searchParams }: { slug: string; searchPar
               <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 xl:gap-10 justify-items-center">
                 {items.map((item) => (
                   <li key={item.id}>
-                    <ProductCard {...item} />
+                    <ProductCard {...item} userId={userId} />
                   </li>
                 ))}
               </ul>
-              
+
               {totalCount > limit && (
                 <div className="mt-8">
                   <PaginationWrapper

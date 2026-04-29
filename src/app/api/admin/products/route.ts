@@ -6,7 +6,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const {
-      id,
       name,
       description,
       basePrice,
@@ -22,9 +21,9 @@ export async function POST(request: NextRequest) {
       img,
     } = body;
 
-    if (!id || !name || !basePrice) {
+    if (!name || !basePrice) {
       return NextResponse.json(
-        { error: "Не указаны обязательные поля (id, name, basePrice)" },
+        { error: "Не указаны обязательные поля (name, basePrice)" },
         { status: 400 }
       );
     }
@@ -32,6 +31,10 @@ export async function POST(request: NextRequest) {
     const client = await pool.connect();
 
     try {
+      // Получаем следующий ID
+      const nextIdResult = await client.query("SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM products");
+      const nextId = nextIdResult.rows[0].next_id;
+
       const result = await client.query(
         `INSERT INTO products (
           id, name, description, base_price, discount_percent,
@@ -41,7 +44,7 @@ export async function POST(request: NextRequest) {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         RETURNING id`,
         [
-          id,
+          nextId,
           name,
           description || "",
           basePrice,
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
           isHealthyFood || false,
           isNonGMO || false,
           tags || [],
-          img || `/images/products/img-${id}.jpeg`,
+          img || `/images/products/img-${nextId}.jpeg`,
           0,
           0,
           JSON.stringify({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }),
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        product: { id: result.rows[0].id, img: img || `/images/products/img-${id}.jpeg`, name },
+        product: { id: result.rows[0].id, img: img || `/images/products/img-${nextId}.jpeg`, name },
       });
     } finally {
       client.release();

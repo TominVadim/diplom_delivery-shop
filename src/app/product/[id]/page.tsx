@@ -11,6 +11,7 @@ import SimilarProducts from "./_components/SimilarProducts";
 import SameBrandProducts from "./_components/SameBrandProducts";
 import ReviewsWrapper from "./_components/ReviewsWrapper";
 import StarRating from "@/components/StarRating";
+import FavoriteButton from "@/components/FavoriteButton";
 import pool from "@/lib/pg";
 
 interface ProductPageProps {
@@ -22,12 +23,12 @@ async function getProduct(id: number) {
   const client = await pool.connect();
   try {
     const result = await client.query(
-      `SELECT 
+      `SELECT
         id, name, description, base_price, discount_percent,
-        rating_rate, rating_count, rating_distribution, article, 
+        rating_rate, rating_count, rating_distribution, article,
         manufacturer, brand, country,
         img, weight, quantity, tags
-      FROM products 
+      FROM products
       WHERE id = $1`,
       [id]
     );
@@ -37,15 +38,13 @@ async function getProduct(id: number) {
   }
 }
 
-async function getUser() {
+async function getServerUserId() {
   const cookieStore = await cookies();
   const userCookie = cookieStore.get("user");
-  
   if (!userCookie?.value) return null;
-  
   try {
     const user = JSON.parse(userCookie.value);
-    return user;
+    return user.id || null;
   } catch {
     return null;
   }
@@ -54,95 +53,60 @@ async function getUser() {
 export async function generateMetadata({ params }: ProductPageProps) {
   const { id } = await params;
   const product = await getProduct(parseInt(id));
-  
-  if (!product) {
-    return { title: "Товар не найден" };
-  }
-  
-  return {
-    title: product.name,
-    description: product.description || `${product.name} в интернет-магазине Северяночка`,
-  };
+  if (!product) return { title: "Товар не найден" };
+  return { title: product.name };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
   const productId = parseInt(id);
-  
-  if (isNaN(productId)) {
-    notFound();
-  }
-  
+  if (isNaN(productId)) notFound();
+
   const product = await getProduct(productId);
-  const user = await getUser();
-  
-  if (!product) {
-    notFound();
-  }
-  
+  const userId = await getServerUserId();
+
+  if (!product) notFound();
+
   const discountPercent = product.discount_percent || 0;
   const discountedPrice = product.base_price * (1 - discountPercent / 100);
   const cardPrice = discountedPrice * (1 - (6 / 100));
   const bonusAmount = product.base_price * 0.05;
-  
   const rating = product.rating_rate || 5.0;
   const reviewCount = product.rating_count || 0;
   const reviewWord = getReviewsWord(reviewCount);
-  
   const firstCategory = product.tags?.[0] || "";
-  
-  // Подготовка данных для отзывов
-  const distribution = product.rating_distribution || { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 };
-  
+
   return (
     <div className="container mx-auto px-4 py-6 md:py-8">
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Левая колонка - изображения */}
         <div className="lg:w-1/2">
           <ImagesBlock product={product} />
         </div>
-        
-        {/* Правая колонка - информация */}
-        <div className="lg:w-1/2">
-          {/* Артикул */}
+
+        <div className="lg:w-1/2 relative">
+          <div className="absolute top-0 right-0">
+            <FavoriteButton productId={productId} userId={userId} />
+          </div>
+
           {product.article && (
             <p className="text-sm text-gray-500 mb-2">Арт. {product.article}</p>
           )}
-          
-          {/* Заголовок */}
-          <h1 className="text-2xl md:text-3xl font-bold mb-4">{product.name}</h1>
-          
-          {/* Рейтинг и отзывы */}
+          <h1 className="text-2xl md:text-3xl font-bold mb-4 pr-12">{product.name}</h1>
           <div className="flex items-center gap-4 mb-6">
             <StarRating rating={rating} />
             <span className="text-sm text-gray-600">
               {reviewCount} {reviewWord}
             </span>
           </div>
-          
-          {/* Цены и предложение */}
-          <ProductOffer 
-            discountedPrice={discountedPrice}
-            cardPrice={cardPrice}
-          />
-          
-          {/* Бонусы */}
+          <ProductOffer discountedPrice={discountedPrice} cardPrice={cardPrice} />
           <Bonuses bonus={bonusAmount} />
-          
-          {/* Кнопка в корзину */}
           <CartButton />
-          
-          {/* Кнопка поделиться */}
           <ShareButton title={product.name} className="mt-4" />
-          
-          {/* Дополнительная информация (бренд, производитель, вес) */}
-          <AdditionalInfo 
+          <AdditionalInfo
             brand={product.brand}
             manufacturer={product.manufacturer || product.country}
             weight={product.weight}
           />
-          
-          {/* Описание */}
           {product.description && (
             <div className="mt-6">
               <h3 className="font-semibold mb-2">Описание</h3>
@@ -151,19 +115,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
           )}
         </div>
       </div>
-      
-      {/* Отзывы */}
       <ReviewsWrapper productId={productId} />
-      
-      {/* Похожие товары */}
-      {firstCategory && (
-        <SimilarProducts productId={productId} category={firstCategory} />
-      )}
-      
-      {/* Товары того же бренда */}
-      {product.brand && (
-        <SameBrandProducts brand={product.brand} productId={productId} />
-      )}
+      {firstCategory && <SimilarProducts productId={productId} category={firstCategory} />}
+      {product.brand && <SameBrandProducts brand={product.brand} productId={productId} />}
     </div>
   );
 }

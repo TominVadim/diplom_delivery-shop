@@ -1,5 +1,5 @@
 export interface ProductCardProps {
-  id: number;           // было _id: number
+  id: number;
   img: string;
   name: string;
   description: string;
@@ -12,4 +12,5 @@ export interface ProductCardProps {
   tags: string[];
   weight?: string;
   quantity: number;
+  onRemoveFromFavorites?: () => void;
 }

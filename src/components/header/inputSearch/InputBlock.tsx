@@ -2,9 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { SearchProduct } from "@/types/searchProduct";
 import SearchInput from "./SearchInput";
 import SearchResults from "./SearchResults";
+
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  basePrice: number;
+  discountPercent: number;
+  img: string;
+  tags: string[];
+}
 
 const InputBlock = ({
   onFocusChangeAction,
@@ -16,9 +25,7 @@ const InputBlock = ({
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [groupedProducts, setGroupedProducts] = useState<
-    { category: string; products: SearchProduct[] }[]
-  >([]);
+  const [results, setResults] = useState<Product[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,21 +41,29 @@ const InputBlock = ({
 
   useEffect(() => {
     const fetchSearchData = async () => {
-      if (query.length > 1) {
+      if (query.length >= 2) {
         try {
           setIsLoading(true);
-          const response = await fetch(`/api/search?query=${query}`);
+          setError(null);
+          const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+          
+          if (!response.ok) {
+            throw new Error("Ошибка поиска");
+          }
+          
           const data = await response.json();
-          setGroupedProducts(data);
+          setResults(data);
         } catch (error) {
-          setError("Не найден продукт или категория");
+          setError("Не удалось выполнить поиск");
+          setResults([]);
         } finally {
           setIsLoading(false);
         }
       } else {
-        setGroupedProducts([]);
+        setResults([]);
       }
     };
+    
     const debounceTimer = setTimeout(fetchSearchData, 300);
     return () => clearTimeout(debounceTimer);
   }, [query]);
@@ -84,14 +99,31 @@ const InputBlock = ({
         handleInputBlur={handleInputBlur}
       />
 
-      {isOpen && (
-        <div className="absolute -mt-0.5 left-0 right-0 z-100 max-h-[300px] overflow-y-auto bg-white rounded-b border-1 border-(--color-primary) border-t-0 shadow-inherit break-words">
+      {isOpen && (query.length >= 2 || isLoading) && (
+        <div className="absolute -mt-0.5 left-0 right-0 z-100 max-h-[400px] overflow-y-auto bg-white rounded-b border border-gray-200 shadow-lg">
           {error ? (
             <div className="p-2 text-red-500 text-sm">
               {error}
               <button
-                onClick={() => setError(null)}
-                className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                onClick={() => {
+                  setError(null);
+                  const fetchData = async () => {
+                    if (query.length >= 2) {
+                      try {
+                        setIsLoading(true);
+                        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+                        if (response.ok) {
+                          const data = await response.json();
+                          setResults(data);
+                        }
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }
+                  };
+                  fetchData();
+                }}
+                className="text-blue-500 hover:text-blue-700 cursor-pointer ml-2"
               >
                 Повторить
               </button>
@@ -100,7 +132,7 @@ const InputBlock = ({
             <SearchResults
               isLoading={isLoading}
               query={query}
-              groupedProducts={groupedProducts}
+              results={results}
               resetSearch={resetSearch}
             />
           )}

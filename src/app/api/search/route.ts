@@ -6,56 +6,41 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const searchQuery = searchParams.get("query") || "";
 
-    if (!searchQuery) {
+    if (!searchQuery || searchQuery.length < 2) {
       return NextResponse.json([]);
     }
 
     // Поиск товаров по названию или описанию
     const productsResult = await query(
-      `SELECT 
-        id, 
-        name, 
-        tags as categories
+      `SELECT
+        id,
+        name,
+        description,
+        base_price as "basePrice",
+        discount_percent as "discountPercent",
+        img,
+        tags
       FROM products
       WHERE (name ILIKE $1 OR description ILIKE $1)
-        AND quantity > 0`,
+        AND quantity > 0
+      LIMIT 20`,
       [`%${searchQuery}%`]
     );
 
     const products = productsResult.rows;
 
-    if (!products.length) {
-      return NextResponse.json([]);
-    }
+    // Преобразуем данные для удобного использования
+    const formattedProducts = products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      basePrice: product.basePrice,
+      discountPercent: product.discountPercent,
+      img: product.img,
+      tags: product.tags || [],
+    }));
 
-    // Группировка по категориям (тегам)
-    const groupedByCategory: Record<string, any[]> = {};
-
-    for (const product of products) {
-      const categories = product.categories || []; // tags в PostgreSQL
-      for (const category of categories) {
-        const normalizedCategory = category.toLowerCase();
-
-        if (!groupedByCategory[normalizedCategory]) {
-          groupedByCategory[normalizedCategory] = [];
-        }
-
-        groupedByCategory[normalizedCategory].push({
-          id: product.id,
-          name: product.name,
-          categories: product.categories,
-        });
-      }
-    }
-
-    const result = Object.entries(groupedByCategory).map(
-      ([category, products]) => ({
-        category,
-        products,
-      })
-    );
-
-    return NextResponse.json(result);
+    return NextResponse.json(formattedProducts);
   } catch (error) {
     console.error("Ошибка поиска:", error);
     return NextResponse.json({ error: "Ошибка поиска" }, { status: 500 });

@@ -1,24 +1,29 @@
-export default function HighlightText({
-  text,
-  highlight,
-}: {
+interface HighlightTextProps {
   text: string;
   highlight: string;
-}) {
-  if (!highlight.trim()) return <>{text}</>;
+}
+
+const HighlightText = ({ text, highlight }: HighlightTextProps) => {
+  // Защита от undefined/null
+  if (!text || !highlight || !highlight.trim()) {
+    return <>{text || ""}</>;
+  }
+
   const parts = text.split(new RegExp(`(${highlight})`, "gi"));
 
   return (
     <span>
-      {parts.map((part, i) =>
+      {parts.map((part, index) =>
         part.toLowerCase() === highlight.toLowerCase() ? (
-          <span key={i} className="font-bold">
+          <mark key={index} className="bg-yellow-200 text-main-text px-0">
             {part}
-          </span>
+          </mark>
         ) : (
           part
         )
       )}
     </span>
   );
-}
+};
+
+export default HighlightText;

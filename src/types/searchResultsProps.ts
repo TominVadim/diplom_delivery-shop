@@ -1,8 +1,14 @@
-import { SearchProduct } from "./searchProduct";
-
 export interface SearchResultsProps {
   isLoading: boolean;
   query: string;
-  groupedProducts: { category: string; products: SearchProduct[] }[];
+  results: Array<{
+    id: number;
+    name: string;
+    description: string;
+    basePrice: number;
+    discountPercent: number;
+    img: string;
+    tags: string[];
+  }>;
   resetSearch: () => void;
 }
