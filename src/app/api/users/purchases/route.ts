@@ -1,5 +1,5 @@
-import { CONFIG } from "../../../../../config/config";
-import { query } from "../../../../../utils/db";
+import { CONFIG } from "@/config/config";
+import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";

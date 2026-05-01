@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { query } from "../../../../utils/db";
+import { query } from "@/utils/db";
 import bcrypt from "bcrypt";
 
 function parseBirthDate(dateStr: string): string | null {

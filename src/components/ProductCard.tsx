@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { ProductCardProps } from "@/types/product";
-import { formatPrice } from "../../utils/formatPrice";
+import { formatPrice } from "@/utils/formatPrice";
 import StarRating from "./StarRating";
 import Link from "next/link";
-import { CONFIG } from "../../config/config";
+import { CONFIG } from "@/config/config";
 import FavoriteButton from "./FavoriteButton";
 
 const cardDiscountPercent = CONFIG.CARD_DISCOUNT_PERCENT;

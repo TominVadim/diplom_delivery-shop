@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import iconToRight from "/public/icons-products/icon-arrow-right.svg";
-import { TRANSLATIONS } from "../../utils/translations";
+import { TRANSLATIONS } from "@/utils/translations";
 
 const BreadcrumbsContent = () => {
   const pathname = usePathname();

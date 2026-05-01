@@ -1,4 +1,4 @@
-import { CONFIG } from "../../../config/config";
+import { CONFIG } from "@/config/config";
 
 interface FetchFavoritesOptions {
   pagination: { startIdx: number; perPage: number };

@@ -13,7 +13,7 @@ import CardInput from "../CardInput";
 import CheckboxCard from "../CheckboxCard";
 import EmailInput from "../EmailInput";
 import RegFormFooter from "../RegFormFooter";
-import { validateRegisterForm } from "../../../../utils/validation/form";
+import { validateRegisterForm } from "@/utils/validation/form";
 import Loader from "../../../../components/Loader";
 import ErrorComponent from "../../../../components/ErrorComponent";
 import { AuthFormLayout } from "../../_components/AuthFormLayout";

@@ -4,7 +4,7 @@ import ProductCard from "@/components/ProductCard";
 import PaginationWrapper from "@/components/PaginationWrapper";
 import { notFound } from "next/navigation";
 import { fetchProductsByCategory } from "./fetchCategoryProducts";
-import { CONFIG } from "../../../../config/config";
+import { CONFIG } from "@/config/config";
 import FilterButtons from "./FilterButtons";
 import FilterControls from "./FilterControls";
 import PriceFilter from "./PriceFilter";
@@ -24,7 +24,7 @@ interface CategoryPageProps {
 }
 
 async function getCategoryBySlug(slug: string) {
-  const { query } = await import("../../../../utils/db");
+  const { query } = await import("@/utils/db");
   const result = await query(
     "SELECT id, title, slug FROM catalog WHERE slug = $1",
     [slug]

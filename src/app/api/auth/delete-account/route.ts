@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query } from "../../../../../utils/db";
+import { query } from "@/utils/db";
 
 function formatPhoneForDB(phone: string): string {
   const digits = phone.replace(/\D/g, '');

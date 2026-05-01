@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '../../../../utils/db';
+import { query } from '@/utils/db';
 import bcrypt from 'bcrypt';
 
 // Функция для конвертации форматированного телефона в формат БД (+7XXXXXXXXXX)

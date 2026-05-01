@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/utils/db";
-import { CONFIG } from "../../../../../../config/config";
+import { CONFIG } from "@/config/config";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;

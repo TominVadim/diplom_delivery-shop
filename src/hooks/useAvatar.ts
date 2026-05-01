@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getAvatarByGender } from "../utils/getAvatarByGender";
-import { checkAvatarExists } from "../utils/avatarUtils";
+import { getAvatarByGender } from "@/utils/getAvatarByGender";
+import { checkAvatarExists } from "@/utils/avatarUtils";
 
 interface UseAvatarProps {
   userId?: string | number;

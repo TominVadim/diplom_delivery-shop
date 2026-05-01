@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { CONFIG } from "../../../../config/config";
+import { CONFIG } from "@/config/config";
 import MiniLoader from "@/components/MiniLoader";
 import ErrorComponent from "@/components/ErrorComponent";
 import PriceFilterHeader from "./PriceFilterHeader";
